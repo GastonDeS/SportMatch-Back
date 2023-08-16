@@ -3,6 +3,7 @@ import cors from 'cors';
 
 import ErrorHandlerMiddleware from './middlewares/errorHandler.middleware';
 import HealthRoutes from './routes/health.routes';
+import pool from './database/postgres.database';
 
 class App {
     public app: Application;
@@ -44,16 +45,25 @@ class App {
 
     // TODO: Organize the services by categories so it's not a mess
     private initializeServices(): void {
-        
     }
 
     private initializeRoutes(): void {
         this.app.use('/', new HealthRoutes().router);
+
+        test().then(() => {
+            console.log("Connected to DB");
+        }).catch((err) => {
+            console.log(err);
+        });
     }
 
     private initializeErrorHandling(): void {
         this.app.use(ErrorHandlerMiddleware);
     }
+}
+
+const test = async (): Promise<void> => {
+    await pool.query("select * from users");
 }
 
 export default new App().app;
