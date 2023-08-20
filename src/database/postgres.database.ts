@@ -1,12 +1,11 @@
 import PG from "pg";
 
-
 const pool = new PG.Pool({
-  user: 'sportsmatch',
-  host: 'localhost',
-  database: 'sportsmatchdb',
-  password: 'sportsmatch',
-  port: 5433,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASS,
+  port: Number(process.env.DB_PORT),
 });
 
 export default pool;

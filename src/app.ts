@@ -4,6 +4,9 @@ import cors from 'cors';
 import ErrorHandlerMiddleware from './middlewares/errorHandler.middleware';
 import HealthRoutes from './routes/health.routes';
 import pool from './database/postgres.database';
+import { createDBTables } from './localHelper/dblocalHelper';
+import UsersRoutes from './routes/users.routes';
+import EventsRoutes from './routes/events.routes';
 
 class App {
     public app: Application;
@@ -49,11 +52,15 @@ class App {
 
     private initializeRoutes(): void {
         this.app.use('/', new HealthRoutes().router);
+        this.app.use('/users', new UsersRoutes().router);
+        this.app.use('/events', new EventsRoutes().router);
 
-        test().then(() => {
-            console.log("Connected to DB");
-        }).catch((err) => {
-            console.log(err);
+        createDBTables().then(() => {
+            test().then(() => {
+                console.log("Connected to DB");
+            }).catch((err) => {
+                console.log(err);
+            });
         });
     }
 
@@ -61,6 +68,7 @@ class App {
         this.app.use(ErrorHandlerMiddleware);
     }
 }
+
 
 const test = async (): Promise<void> => {
     await pool.query("select * from users");
