@@ -15,7 +15,7 @@ class EventsService {
         const query = `INSERT INTO participants(event_id, user_id, status)
         VALUES(${eventId}, ${userId}, 'false')`;
 
-        const res = await pool.query(query);
+        await pool.query(query);
     }
 
     public async acceptParticipant(eventId: number, userId: number): Promise<void> {
@@ -23,7 +23,7 @@ class EventsService {
         SET status = 'true'
         WHERE event_id = ${eventId} AND user_id = ${userId}`;
 
-        const res = await pool.query(query);
+        await pool.query(query);
     }
 
     public async getParticipants(eventId: number): Promise<any> {

@@ -4,28 +4,15 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pm2 restart all",
-    "clean": "rimraf dist/*",
-    "tsc": "tsc",
-    "build": "npm-run-all clean tsc move",
-    "prod": "npm-run-all build start",
-    "move": "ts-node copyAssets",
-    "first-start": "node ./dist/server.js",
-    "deploy": "npm-run-all build first-start",
-    "login": "aws codeartifact login --tool npm --repository backend-shared-libs --domain td --namespace td --profile npm --region us-east-1",
-    "dev": "nodemon src/server.ts",
-    "dev:start": "node dist/server.js",
-    "lint": "eslint src/**/*.ts --fix"
+    "build": "tsc ",
+    "start": "node dist/server.js",
+    "dev": "nodemon src/server.ts"
   },
   "defaultExtension": "ts",
   "engines": {
     "node": ">=18.0.0"
   },
-  "lint-staged": {
-    "src/**/*.ts": "eslint src/**/*.ts --fix"
-  },
-  "author": "",
+  "author": "Gastón De Schant",
   "license": "ISC",
   "dependencies": {
     "axios": "~0.21.1",
