@@ -19,7 +19,7 @@ export default class EventsRoutes {
         this.router.get('/', this.controller.getEvents);
         this.router.get('/:eventId', this.controller.getEventById);
         this.router.put('/:eventId/participants', this.controller.addParticipant);
-        this.router.put('/:eventId/owner/participants', this.controller.acceptParticipant);
+        this.router.put('/:eventId/owner/participants', this.controller.acceptParticipant); // TODO: Add middleware for owner and logged in 
         this.router.get('/:eventId/owner/participants', this.controller.getParticipants);
 
         this.router.post('/', this.controller.createEvent);

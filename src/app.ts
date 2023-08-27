@@ -37,9 +37,13 @@ class App {
     }
 
     private initializeDatabases(): void {
-        if (process.env.DB_URL) {
+        if (process.env.DB_HOST) {
             try {
-                
+                pool.connect().then(() => {
+                    console.log("Connected to DB");
+                }).catch((err) => {
+                    console.log(err);
+                });
             } catch (err) {
                 console.log(err);
             }
@@ -55,23 +59,18 @@ class App {
         this.app.use('/users', new UsersRoutes().router);
         this.app.use('/events', new EventsRoutes().router);
 
-        createDBTables().then(() => {
-            test().then(() => {
-                console.log("Connected to DB");
-            }).catch((err) => {
-                console.log(err);
-            });
-        });
+        // createDBTables().then(() => {
+        //     test().then(() => {
+        //         console.log("Connected to DB");
+        //     }).catch((err) => {
+        //         console.log(err);
+        //     });
+        // });
     }
 
     private initializeErrorHandling(): void {
         this.app.use(ErrorHandlerMiddleware);
     }
-}
-
-
-const test = async (): Promise<void> => {
-    await pool.query("select * from users");
 }
 
 export default new App().app;
