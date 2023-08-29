@@ -66,10 +66,12 @@ export const createDBTables = async (): Promise<void>  => {
         (2, 'Basket match', 2, '2021-05-01 10:00:00', 'Calle de la piruleta 1', 1, 1)`);
 
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (2, 1, 'true')`);
+        (2, 1, 'true');`);
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (3, 1, 'false')`);
+        (3, 1, 'false');`);
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (1, 2, 'false')`);
+        (1, 2, 'false');`);
+
+    console.log((await pool.query(`SELECT * FROM participants;`)).rows);
 }
 

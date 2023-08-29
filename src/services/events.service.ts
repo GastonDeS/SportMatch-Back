@@ -58,6 +58,8 @@ class EventsService {
     }
 
     public async getEvents(queryFilters: Record<string, string>): Promise<any> {
+        const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
+
         let query = `SELECT
                 events.id AS event_id,
                 events.description,
@@ -67,12 +69,13 @@ class EventsService {
                 events.sport_id,
                 events.remaining - COUNT(participants.id) AS remaining,
                 users.firstname AS owner_firstname
+                ${participantIdFilter ? ", participants.status as participant_status" : ""}
             FROM
                 events
             JOIN
                 users ON events.owner_id = users.id
             LEFT JOIN
-                participants ON events.id = participants.event_id AND participants.status = 'true'\n`;
+                participants ON events.id = participants.event_id\n`;
 
 
         if (queryFilters != undefined) {
@@ -88,14 +91,16 @@ class EventsService {
             }
     
             const participantId = queryFilters.participantId?.toString().trim();
-            if (participantId !== undefined) {
+            if (participantIdFilter) {
                 query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
                 query = query.concat("participants.user_id = " + participantId);
             }
         }
 
-        query = query.concat(`GROUP BY
-        events.id, users.firstname`);
+        query = query.concat(` GROUP BY
+        events.id, users.firstname ${participantIdFilter ? ", participants.status" : ""};`);
+
+        console.log(query);
 
         const res = await pool.query(query);
         return res.rows;
