@@ -111,7 +111,7 @@ class EventsService {
         remaining: number
     ) {
         const query = `INSERT INTO events(owner_id, sport_id, expertise, location, time, description, remaining)
-        VALUES(${owner_id}, ${sport_id}, ${expertise}, '${location}', '${time}', '${description}', ${remaining})`;
+        VALUES(${owner_id}, ${sport_id}, ${expertise}, '${location}', TO_TIMESTAMP(${time}, 'YYYY-MM-DD HH24:MI:SS'), '${description}', ${remaining})`;
 
         const res = await pool.query(query);
         return res.rows;
