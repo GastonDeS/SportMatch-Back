@@ -44,8 +44,8 @@ class EventsController {
         const { owner_id, sport_id, expertise, description, time, location, remaining } = req.body;
 
         try {
-            const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, description, time, location, remaining);
-            res.status(HTTP_STATUS.CREATED).send(event);
+            const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, location, time, description, remaining);
+            res.status(HTTP_STATUS.CREATED).send({eventId: event});
         } catch (err) {
             next(err);
         }
