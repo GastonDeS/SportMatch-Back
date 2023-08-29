@@ -41,6 +41,10 @@ class App {
             try {
                 pool.connect().then(() => {
                     console.log("Connected to DB");
+
+                    createDBTables().then(() => {
+                        console.log("Created DB tables");
+                    });
                 }).catch((err) => {
                     console.log(err);
                 });

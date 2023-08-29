@@ -11,8 +11,8 @@ export const createDBTables = async (): Promise<void>  => {
         id serial PRIMARY KEY,
         firstname varchar(256),
         lastname varchar(256),
-        telephone varchar(256),
-        email varchar(256)
+        telephone varchar(256) unique,
+        email varchar(256) unique
     );`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS sports (
@@ -54,18 +54,17 @@ export const createDBTables = async (): Promise<void>  => {
         ('football'),
         ('basket'),
         ('tennis'),
-        ('paddle');`);
+        ('paddle') ON CONFLICT (name) DO NOTHING;`);
 
     await pool.query(`INSERT INTO users (firstname, lastname, telephone, email) VALUES
-        ('John', 'Doe', '123456789', 'caberna@gmail.com'),
-        ('Jane', 'Doe', '123456789', 'janeDoe@gmail.com');`);
+        ('John', 'Doe', '2235910122', 'caberna@gmail.com'),
+        ('Jane', 'Doe', '4234143122', 'janeDoe@gmail.com') ON CONFLICT (email) DO NOTHING;`);
 
     await pool.query(`INSERT INTO events (owner_id, description, sport_id, time, location, expertise, remaining) VALUES
-        (1, 'Football match', 1, '2021-05-01 10:00:00', 'Calle de la piruleta 1', 1, 1),
-        (1, 'Basket match', 2, '2021-05-01 10:00:00', 'Calle de la piruleta 1', 1, 1)
-        `);
+        (2, 'Football match', 1, '2021-05-01 10:00:00', 'Calle de la piruleta 1', 1, 1),
+        (2, 'Basket match', 2, '2021-05-01 10:00:00', 'Calle de la piruleta 1', 1, 1)`);
 
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (1, 2, 'true')`);
+        (1, 1, 'true')`);
 }
 
