@@ -27,7 +27,15 @@ class EventsService {
     }
 
     public async getParticipants(eventId: number): Promise<any> {
-        const query = `SELECT * FROM participants WHERE event_id = ${eventId}`;
+        const query =   `SELECT 
+                            participants.user_id,
+                            users.firstname as firstname,
+                            users.lastname as lastname,
+                            participants.status as participant_status,
+                            users.telephone as telephone
+                        FROM participants 
+                            left outer join users on participants.user_id = users.id
+                        WHERE event_id = ${eventId}`;
         const res = await pool.query(query);
         return res.rows;
     }
