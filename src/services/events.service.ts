@@ -116,8 +116,6 @@ class EventsService {
         query = query.concat(` GROUP BY
         events.id, users.firstname ${participantIdFilter ? ", participants.status" : ""};`);
 
-        console.log(query);
-
         const res = await pool.query(query);
         return res.rows;
     }

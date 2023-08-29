@@ -16,7 +16,6 @@ class UsersService {
     public async getUsers(): Promise<any> {
         const users = await pool.query(`SELECT * FROM users;`);
         return users.rows;
-        console.log(users);
     }
 
     public async getUserByEmail(email: string): Promise<any> {
@@ -35,7 +34,6 @@ class UsersService {
                     WHERE u.email = $1
                     GROUP BY u.id;`, [email]);
 
-        console.log(user.rows[0]);
         return user.rows[0];
     }
 
