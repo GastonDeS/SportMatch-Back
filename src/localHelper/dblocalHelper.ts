@@ -3,6 +3,8 @@ import pool from "../database/postgres.database";
 // this is a helper for running on local
 export const createDBTables = async (): Promise<void>  => {
     await pool.query(`DROP TABLE IF EXISTS participants;`);
+    await pool.query(`DROP TABLE IF EXISTS users_sports;`);
+    await pool.query(`DROP TABLE IF EXISTS users_locations;`);
     await pool.query(`DROP TABLE IF EXISTS events;`);
     await pool.query(`DROP TABLE IF EXISTS sports;`);
     await pool.query(`DROP TABLE IF EXISTS users;`);
@@ -56,9 +58,46 @@ export const createDBTables = async (): Promise<void>  => {
         ('tennis'),
         ('paddle') ON CONFLICT (name) DO NOTHING;`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS users_sports (
+        id serial PRIMARY KEY,
+        user_id integer,
+        sport_id integer,
+        CONSTRAINT fk_user
+            FOREIGN KEY(user_id)
+                REFERENCES users(id)
+                ON DELETE CASCADE,
+        CONSTRAINT fk_sport
+            FOREIGN KEY(sport_id)
+                REFERENCES sports(id)
+                ON DELETE CASCADE,
+        CONSTRAINT unique_sports_user UNIQUE(user_id, sport_id)
+    );
+    `);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS users_locations (
+        id serial PRIMARY KEY,
+        user_id integer REFERENCES users (id),
+        location varchar(256),
+        CONSTRAINT fk_user
+            FOREIGN KEY(user_id)
+                REFERENCES users(id)
+                ON DELETE CASCADE,
+        CONSTRAINT unique_location_user UNIQUE(user_id, location)
+    );
+    `);
+
+
     await pool.query(`INSERT INTO users (firstname, lastname, telephone, email) VALUES
         ('John', 'Doe', '2235910122', 'caberna@gmail.com'),
         ('Jane', 'Doe', '4234143122', 'janeDoe@gmail.com') ON CONFLICT (email) DO NOTHING;`);
+
+    await pool.query(`INSERT INTO users_sports (user_id, sport_id) VALUES
+        (1, 1),
+        (1, 2);`);
+
+    await pool.query(`INSERT INTO users_locations (user_id, location) VALUES
+        (1, 'Calle de la piruleta 1'),
+        (1, 'Calle de la piruleta 2');`);
 
     await pool.query(`INSERT INTO events (owner_id, description, sport_id, time, location, expertise, remaining) VALUES
         (1, 'Football match', 1, '2021-05-01 10:00:00', 'Calle de la piruleta 1', 1, 1),

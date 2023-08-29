@@ -17,6 +17,7 @@ export default class UsersRoutes {
         this.router.use(cors());
 
         this.router.get('/', this.controller.getUsers);
-        this.router.get('/:email', this.controller.getUserByEmail);
+        this.router.post('/', this.controller.createUser);
+        this.router.put('/:userId', this.controller.updateUser);
     }
 }
