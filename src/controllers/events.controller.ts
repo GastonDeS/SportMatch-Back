@@ -16,7 +16,8 @@ class EventsController {
     @validateQuery(Joi.object({
         participantId: Joi.string().optional(),
         sportId: Joi.string().optional(),
-        userId: Joi.string().optional()
+        userId: Joi.string().optional(),
+        filterOut: Joi.boolean().optional(),
     }))
     public async getEvents(req: Request, res: Response, next: NextFunction) {
         const queryFilters = req.query as Record<string, string>;

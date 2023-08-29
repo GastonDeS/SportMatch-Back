@@ -74,6 +74,7 @@ class EventsService {
 
     public async getEvents(queryFilters: Record<string, string>): Promise<any> {
         const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
+        const filterOut = !!queryFilters.filterOut;
 
         let query = `SELECT
                 events.id AS event_id,
@@ -96,19 +97,19 @@ class EventsService {
         if (queryFilters != undefined) {
             const sportId = queryFilters.sportId?.toString().trim();
             if (sportId !== undefined) {
-                query = query.concat(" WHERE sport_id = " + sportId);
+                query = query.concat(` WHERE sport_id ${filterOut ? "!" : ""}= ${sportId}`);
             }
     
             const userId = queryFilters.userId?.toString().trim();
             if (userId !== undefined) {
                 query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
-                query = query.concat("events.owner_id = " + userId);
+                query = query.concat(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
             }
     
             const participantId = queryFilters.participantId?.toString().trim();
             if (participantIdFilter) {
                 query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
-                query = query.concat("participants.user_id = " + participantId);
+                query = query.concat(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
             }
         }
 
