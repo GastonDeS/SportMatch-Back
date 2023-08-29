@@ -18,6 +18,13 @@ class EventsService {
         await pool.query(query);
     }
 
+    public async removeParticipant(eventId: number, userId: number): Promise<void> {
+        const query = `DELETE FROM participants
+        WHERE event_id = ${eventId} AND user_id = ${userId}`;
+
+        await pool.query(query);
+    }
+
     public async acceptParticipant(eventId: number, userId: number): Promise<void> {
         const query = `UPDATE participants
         SET status = true

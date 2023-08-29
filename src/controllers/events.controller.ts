@@ -15,6 +15,7 @@ class EventsController {
         this.addParticipant = this.addParticipant.bind(this);
         this.acceptParticipant = this.acceptParticipant.bind(this);
         this.getParticipants = this.getParticipants.bind(this);
+        this.removeParticipant = this.removeParticipant.bind(this);
     }
 
     public async getEvents(req: Request, res: Response, next: NextFunction) {
@@ -56,6 +57,17 @@ class EventsController {
         const eventId = parseInt(req.params.eventId);
         try {
             await this.eventsService.addParticipant(eventId, userId);
+            res.status(HTTP_STATUS.OK).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    public async removeParticipant(req: Request, res: Response, next: NextFunction) {
+        const userId = req.body.userId; // TODO get this from validator
+        const eventId = parseInt(req.params.eventId);
+        try {
+            await this.eventsService.removeParticipant(eventId, userId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
