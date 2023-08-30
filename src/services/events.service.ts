@@ -133,7 +133,7 @@ class EventsService {
                 filtersActive = true;
             }
 
-            const date = queryFilters.date?.toString().trim();
+            const date = queryFilters.date?.toString();
             if (date !== undefined) {
                 query = query.concat(filtersActive ? " AND " : " WHERE ");
                 query = query.concat(`TO_CHAR(schedule, 'YYYY-MM-DD') = '${date}'`);
