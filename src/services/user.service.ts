@@ -24,7 +24,7 @@ class UsersService {
                     u.id AS user_id,
                     u.firstname,
                     u.lastname,
-                    u.telephone,
+                    u.phone_number,
                     u.email,
                     ARRAY_AGG(DISTINCT (us.sport_id)) AS sports,
                     ARRAY_AGG(DISTINCT ul.location) AS locations
@@ -37,19 +37,19 @@ class UsersService {
         return user.rows[0];
     }
 
-    public async createUser(email: string, firstname: string, lastname: string, telephone: string): Promise<any> {
-        const users = await pool.query(`INSERT INTO users(email, firstname, lastname, telephone) VALUES($1, $2, $3, $4) RETURNING *;`, [email, firstname, lastname, telephone]);
+    public async createUser(email: string, firstname: string, lastname: string, phone_number: string): Promise<any> {
+        const users = await pool.query(`INSERT INTO users(email, firstname, lastname, phone_number) VALUES($1, $2, $3, $4) RETURNING *;`, [email, firstname, lastname, phone_number]);
         return users.rows[0];
     }
 
-    public async updateUser(userId: string, telephone?: string, locations?: string[], sports?: string[]): Promise<any> {
-        if (telephone) await this.updatePhoneNumber(userId, telephone);
+    public async updateUser(userId: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<any> {
+        if (phone_number) await this.updatePhoneNumber(userId, phone_number);
         if (locations) await this.updateLocations(userId, locations);
         if (sports) await this.updateSports(userId, sports);
     }
 
-    private async updatePhoneNumber(userId: string, telephone: string): Promise<any> {
-        await pool.query(`UPDATE users SET telephone = $1 WHERE id = $2;`, [telephone, userId]);
+    private async updatePhoneNumber(userId: string, phone_number: string): Promise<any> {
+        await pool.query(`UPDATE users SET phone_number = $1 WHERE id = $2;`, [phone_number, userId]);
     }
 
     private async updateLocations(userId: string, locations: string[]): Promise<any> {

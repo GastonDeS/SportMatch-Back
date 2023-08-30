@@ -15,7 +15,7 @@ export const createDBTables = async (): Promise<void>  => {
         id serial PRIMARY KEY,
         firstname varchar(256),
         lastname varchar(256),
-        telephone varchar(256) unique,
+        phone_number varchar(256) unique,
         email varchar(256) unique
     );`);
 
@@ -89,9 +89,9 @@ export const createDBTables = async (): Promise<void>  => {
     `);
 
 
-    await pool.query(`INSERT INTO users (firstname, lastname, telephone, email) VALUES
+    await pool.query(`INSERT INTO users (firstname, lastname, phone_number, email) VALUES
         ('John', 'Doe', '2235910122', 'caberna@gmail.com'),
-        ('Jane', 'Doe', '4234143122', 'janeDoe@gmail.com') ON CONFLICT (email) DO NOTHING;`);
+        ('Jane', 'Doe', '2235910125', 'janeDoe@gmail.com') ON CONFLICT (email) DO NOTHING;`);
 
     await pool.query(`INSERT INTO users_sports (user_id, sport_id) VALUES
         (1, 1),
