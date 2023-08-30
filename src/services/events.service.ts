@@ -96,25 +96,29 @@ class EventsService {
                 participants ON events.id = participants.event_id\n`;
 
 
+        let filtersActive = false;
         if (queryFilters != undefined) {
             const sportId = queryFilters.sportId?.toString().trim();
             if (sportId !== undefined) {
                 query = query.concat(` WHERE sport_id ${filterOut ? "!" : ""}= ${sportId}`);
+                filtersActive = true;
             }
     
             const userId = queryFilters.userId?.toString().trim();
             if (userId !== undefined) {
-                query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
+                query = query.concat(filtersActive ? " AND " : " WHERE ");
                 query = query.concat(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
+                filtersActive = true;
             }
     
             const participantId = queryFilters.participantId?.toString().trim();
             if (participantIdFilter) {
-                query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
+                query = query.concat(filtersActive ? " AND " : " WHERE ");
                 query = query.concat(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
+                filtersActive = true;
             }
 
-            query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
+            query = query.concat(filtersActive ? " AND " : " WHERE ");
             query = query.concat(`events.time ${filterOut ? ">" : "<"}= CURRENT_TIMESTAMP`);
         }
 
