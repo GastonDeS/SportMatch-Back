@@ -133,6 +133,13 @@ class EventsService {
                 filtersActive = true;
             }
 
+            const date = queryFilters.date?.toString().trim();
+            if (date !== undefined) {
+                query = query.concat(filtersActive ? " AND " : " WHERE ");
+                query = query.concat(`TO_CHAR(schedule, 'YYYY-MM-DD') = '${date}'`);
+                filtersActive = true;
+            }
+
             const schedule = queryFilters.schedule?.toString().trim();
             if (schedule !== undefined) {
                 query = query.concat(filtersActive ? " AND " : " WHERE ");

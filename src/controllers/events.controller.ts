@@ -21,6 +21,7 @@ class EventsController {
         location: Joi.string().optional(),
         expertise: Joi.string().optional(),
         schedule: Joi.string().optional(),
+        date: Joi.string().optional(),
     }))
     public async getEvents(req: Request, res: Response, next: NextFunction) {
         const queryFilters = req.query as Record<string, string>;
