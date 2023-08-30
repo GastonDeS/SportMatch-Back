@@ -91,7 +91,8 @@ export const createDBTables = async (): Promise<void>  => {
 
     await pool.query(`INSERT INTO users (firstname, lastname, telephone, email) VALUES
         ('John', 'Doe', '2235910122', 'caberna@gmail.com'),
-        ('Jane', 'Doe', '4234143122', 'janeDoe@gmail.com') ON CONFLICT (email) DO NOTHING;`);
+        ('Jane', 'Doe', '4234143122', 'janeDoe@gmail.com'),
+	('Marcos', 'Doe','1121576282', 'marcos@gmail.com') ON CONFLICT (email) DO NOTHING;`);
 
     await pool.query(`INSERT INTO users_sports (user_id, sport_id) VALUES
         (1, 1),
@@ -102,9 +103,10 @@ export const createDBTables = async (): Promise<void>  => {
         (1, 'Calle de la piruleta 2');`);
 
     await pool.query(`INSERT INTO events (owner_id, description, sport_id, time, location, expertise, remaining) VALUES
-        (1, 'Football match', 1, '2021-05-01 20:00:00', 'Calle de la piruleta 1', 1, 1),
-        (2, 'Football match', 1, '2021-05-01 10:00:00', 'Calle de la piruleta 1', 1, 1),
-        (2, 'Basket match', 2, '2021-05-01 9:00:00', 'Calle de la piruleta 1', 1, 1)`);
+        (1, 'Football match', 1, '2023-09-01 20:00:00', 'Calle de la piruleta 1', 1, 1),
+        (2, 'Football match', 1, '2023-09-01 10:00:00', 'Calle de la piruleta 1', 1, 1),
+        (2, 'Basket match', 2, '2023-09-02 9:00:00', 'Calle de la piruleta 1', 1, 1),
+	(3, 'Nuevo partido', 3, '2023-09-04 11:00:00', 'Amenabar 3223', 2, 3);`);
 
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
         (2, 1, true);`);
