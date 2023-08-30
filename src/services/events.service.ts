@@ -52,7 +52,7 @@ class EventsService {
         const query = `SELECT
                 events.id AS event_id,
                 events.description,
-                events.time,
+                events.schedule,
                 events.location,
                 events.expertise,
                 events.sport_id,
@@ -82,7 +82,7 @@ class EventsService {
         let query = `SELECT
                 events.id AS event_id,
                 events.description,
-                events.time,
+                events.schedule,
                 events.location,
                 events.expertise,
                 events.sport_id,
@@ -133,34 +133,34 @@ class EventsService {
                 filtersActive = true;
             }
 
-            const time = queryFilters.time?.toString().trim();
-            if (time !== undefined) {
+            const schedule = queryFilters.schedule?.toString().trim();
+            if (schedule !== undefined) {
                 query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(this.getTimeEventFilter(time));
+                query = query.concat(this.getTimeEventFilter(schedule));
                 filtersActive = true;
             }
 
             query = query.concat(filtersActive ? " AND " : " WHERE ");
-            query = query.concat(`events.time >= CURRENT_TIMESTAMP`);
+            query = query.concat(`events.schedule >= CURRENT_TIMESTAMP`);
         }
 
         query = query.concat(` GROUP BY
         events.id, users.firstname ${participantIdFilter ? ", participants.status" : ""} 
-            ORDER BY events.time ASC 
+            ORDER BY events.schedule ASC 
             LIMIT ${limit} OFFSET ${ page * limit}`);
 
         const res = await pool.query(query);
         return res.rows;
     }
 
-    private getTimeEventFilter(time: string) {
+    private getTimeEventFilter(schedule: string) {
 
-        const times = `{${time.split(",")}}`
+        const times = `{${schedule.split(",")}}`
 
         return `
-         ((EXTRACT(HOUR FROM events.time) >= 6 AND EXTRACT(HOUR FROM events.time) < 12 AND 0 = ANY('${times}')) OR
-        (EXTRACT(HOUR FROM events.time) >= 12 AND EXTRACT(HOUR FROM events.time) < 18 AND 1 = ANY('${times}')) OR
-        ((EXTRACT(HOUR FROM events.time) >= 18 OR EXTRACT(HOUR FROM events.time) < 6) AND 2 = ANY('${times}')))
+         ((EXTRACT(HOUR FROM events.schedule) >= 6 AND EXTRACT(HOUR FROM events.schedule) < 12 AND 0 = ANY('${times}')) OR
+        (EXTRACT(HOUR FROM events.schedule) >= 12 AND EXTRACT(HOUR FROM events.schedule) < 18 AND 1 = ANY('${times}')) OR
+        ((EXTRACT(HOUR FROM events.schedule) >= 18 OR EXTRACT(HOUR FROM events.schedule) < 6) AND 2 = ANY('${times}')))
         `
     }
 
@@ -169,12 +169,12 @@ class EventsService {
         sport_id: number,
         expertise: number,
         location: string,
-        time: string,
+        schedule: string,
         description: string,
         remaining: number
     ) {
-        const query = `INSERT INTO events(owner_id, sport_id, expertise, location, time, description, remaining)
-        VALUES(${owner_id}, ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${time}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${remaining}) RETURNING id;`;
+        const query = `INSERT INTO events(owner_id, sport_id, expertise, location, schedule, description, remaining)
+        VALUES(${owner_id}, ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${remaining}) RETURNING id;`;
 
         const res = await pool.query(query);
         return res.rows[0].id;

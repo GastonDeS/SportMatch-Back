@@ -20,7 +20,7 @@ class EventsController {
         filterOut: Joi.boolean().optional(),
         location: Joi.string().optional(),
         expertise: Joi.string().optional(),
-        time: Joi.string().optional(),
+        schedule: Joi.string().optional(),
     }))
     public async getEvents(req: Request, res: Response, next: NextFunction) {
         const queryFilters = req.query as Record<string, string>;
@@ -52,16 +52,16 @@ class EventsController {
         owner_id: Joi.number().required(),
         sport_id: Joi.number().required(),
         expertise: Joi.string().required(),
-        time: Joi.date().required(),
+        schedule: Joi.date().required(),
         location: Joi.string().required(),
         remaining: Joi.number().required(),
         description: Joi.string().optional()
     }))
     public async createEvent(req: Request, res: Response, next: NextFunction) {
-        const { owner_id, sport_id, expertise, description, time, location, remaining } = req.body;
+        const { owner_id, sport_id, expertise, description, schedule, location, remaining } = req.body;
 
         try {
-            const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, location, time, description, remaining);
+            const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, location, schedule, description, remaining);
             res.status(HTTP_STATUS.CREATED).send({eventId: event});
         } catch (err) {
             next(err);

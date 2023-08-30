@@ -29,7 +29,7 @@ export const createDBTables = async (): Promise<void>  => {
         owner_id integer REFERENCES users (id),
         description varchar(1024),
         sport_id integer REFERENCES sports (id),
-        time timestamp,
+        schedule timestamp,
         location varchar(256),
         expertise integer,
         remaining integer,
@@ -102,7 +102,7 @@ export const createDBTables = async (): Promise<void>  => {
         (1, 'Agronomía'),
         (1, 'Almagro');`);
 
-    await pool.query(`INSERT INTO events (owner_id, description, sport_id, time, location, expertise, remaining) VALUES
+    await pool.query(`INSERT INTO events (owner_id, description, sport_id, schedule, location, expertise, remaining) VALUES
         (1, 'Football match', 1, '2023-09-01 20:00:00', 'Almagro', 1, 1),
         (2, 'Football match', 1, '2023-09-01 10:00:00', 'Caballito', 1, 1),
         (2, 'Basket match', 2, '2023-09-02 9:00:00', 'Chacarita', 1, 1),
