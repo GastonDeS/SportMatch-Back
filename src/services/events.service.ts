@@ -39,7 +39,7 @@ class EventsService {
                             users.firstname as firstname,
                             users.lastname as lastname,
                             participants.status as participant_status,
-                            users.telephone as telephone
+                            users.phone_number as phone_number
                         FROM participants 
                             left outer join users on participants.user_id = users.id
                         WHERE event_id = ${eventId}`;

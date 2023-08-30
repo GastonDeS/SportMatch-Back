@@ -35,13 +35,13 @@ class UsersController {
         email: Joi.string().email().required(),
         firstname: Joi.string().required(),
         lastname: Joi.string().required(),
-        telephone: Joi.string().required()
+        phone_number: Joi.string().required()
     }))
     public async createUser(req: Request, res: Response, next: NextFunction) {
-        const { email, firstname, lastname, telephone } = req.body;
+        const { email, firstname, lastname, phone_number } = req.body;
 
         try {
-            const user = await this.usersService.createUser(email, firstname, lastname, telephone);
+            const user = await this.usersService.createUser(email, firstname, lastname, phone_number);
             res.status(HTTP_STATUS.OK).send(user);
         } catch (err) {
             next(err);
@@ -53,16 +53,16 @@ class UsersController {
         userId: Joi.string().required()
     }))
     @validateBody(Joi.object({
-        telephone: Joi.string().optional(),
+        phone_number: Joi.string().optional(),
         locations: Joi.array().items(Joi.string()).optional(),
         sports: Joi.array().items(Joi.string()).optional()
     }))
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const userId = req.params.userId;
-        const { telephone, locations, sports } = req.body;
+        const { phone_number, locations, sports } = req.body;
 
         try {
-            const user = await this.usersService.updateUser(userId, telephone, locations, sports);
+            const user = await this.usersService.updateUser(userId, phone_number, locations, sports);
             res.status(HTTP_STATUS.OK).send(user);
         } catch (err) {
             next(err);
