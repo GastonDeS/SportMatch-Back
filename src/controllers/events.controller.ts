@@ -18,10 +18,13 @@ class EventsController {
         sportId: Joi.string().optional(),
         userId: Joi.string().optional(),
         filterOut: Joi.boolean().optional(),
+        location: Joi.string().optional(),
+        expertise: Joi.string().optional(),
+        time: Joi.string().optional(),
     }))
     public async getEvents(req: Request, res: Response, next: NextFunction) {
         const queryFilters = req.query as Record<string, string>;
-
+        
         try {
             const events = await this.eventsService.getEvents(queryFilters);
             res.status(HTTP_STATUS.OK).send(events);

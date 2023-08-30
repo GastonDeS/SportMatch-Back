@@ -99,14 +99,14 @@ export const createDBTables = async (): Promise<void>  => {
         (1, 2);`);
 
     await pool.query(`INSERT INTO users_locations (user_id, location) VALUES
-        (1, 'Calle de la piruleta 1'),
-        (1, 'Calle de la piruleta 2');`);
+        (1, 'Agronomía'),
+        (1, 'Almagro');`);
 
     await pool.query(`INSERT INTO events (owner_id, description, sport_id, time, location, expertise, remaining) VALUES
-        (1, 'Football match', 1, '2023-09-01 20:00:00', 'Calle de la piruleta 1', 1, 1),
-        (2, 'Football match', 1, '2023-09-01 10:00:00', 'Calle de la piruleta 1', 1, 1),
-        (2, 'Basket match', 2, '2023-09-02 9:00:00', 'Calle de la piruleta 1', 1, 1),
-	(3, 'Nuevo partido', 3, '2023-09-04 11:00:00', 'Amenabar 3223', 2, 3);`);
+        (1, 'Football match', 1, '2023-09-01 20:00:00', 'Almagro', 1, 1),
+        (2, 'Football match', 1, '2023-09-01 10:00:00', 'Caballito', 1, 1),
+        (2, 'Basket match', 2, '2023-09-02 9:00:00', 'Chacarita', 1, 1),
+	    (3, 'Nuevo partido', 3, '2023-09-04 11:00:00', 'Agronomía', 2, 3);`);
 
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
         (2, 1, true);`);
@@ -115,6 +115,5 @@ export const createDBTables = async (): Promise<void>  => {
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
         (1, 2, false);`);
 
-    console.log((await pool.query(`SELECT * FROM participants;`)).rows);
 }
 

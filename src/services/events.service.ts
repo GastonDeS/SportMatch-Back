@@ -1,3 +1,4 @@
+import { TIME_OF_DAY } from "../constants/events.constants";
 import pool from "../database/postgres.database";
 
 class EventsService {
@@ -100,7 +101,7 @@ class EventsService {
         if (queryFilters != undefined) {
             const sportId = queryFilters.sportId?.toString().trim();
             if (sportId !== undefined) {
-                query = query.concat(` WHERE sport_id ${filterOut ? "!" : ""}= ${sportId}`);
+                query = query.concat(` WHERE sport_id = ${sportId}`);
                 filtersActive = true;
             }
     
@@ -114,12 +115,33 @@ class EventsService {
             const participantId = queryFilters.participantId?.toString().trim();
             if (participantIdFilter) {
                 query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
+                query = query.concat(`participants.user_id = ${participantId}`);
+                filtersActive = true;
+            }
+
+            const location = queryFilters.location?.toString().trim();
+            if (location !== undefined) {
+                query = query.concat(filtersActive ? " AND " : " WHERE ");
+                query = query.concat(`events.location = '${location}'`);
+                filtersActive = true;
+            }
+
+            const expertise = queryFilters.expertise?.toString().trim();
+            if (expertise !== undefined) {
+                query = query.concat(filtersActive ? " AND " : " WHERE ");
+                query = query.concat(`events.expertise = ${expertise}`);
+                filtersActive = true;
+            }
+
+            const time = queryFilters.time?.toString().trim();
+            if (time !== undefined) {
+                query = query.concat(filtersActive ? " AND " : " WHERE ");
+                query = query.concat(this.getTimeEventFilter(time));
                 filtersActive = true;
             }
 
             query = query.concat(filtersActive ? " AND " : " WHERE ");
-            query = query.concat(`events.time ${filterOut ? ">" : "<"}= CURRENT_TIMESTAMP`);
+            query = query.concat(`events.time >= CURRENT_TIMESTAMP`);
         }
 
         query = query.concat(` GROUP BY
@@ -129,6 +151,17 @@ class EventsService {
 
         const res = await pool.query(query);
         return res.rows;
+    }
+
+    private getTimeEventFilter(time: string) {
+
+        const times = `{${time.split(",")}}`
+
+        return `
+         ((EXTRACT(HOUR FROM events.time) >= 6 AND EXTRACT(HOUR FROM events.time) < 12 AND 0 = ANY('${times}')) OR
+        (EXTRACT(HOUR FROM events.time) >= 12 AND EXTRACT(HOUR FROM events.time) < 18 AND 1 = ANY('${times}')) OR
+        ((EXTRACT(HOUR FROM events.time) >= 18 OR EXTRACT(HOUR FROM events.time) < 6) AND 2 = ANY('${times}')))
+        `
     }
 
     public async createEvent(
