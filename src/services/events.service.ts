@@ -75,6 +75,8 @@ class EventsService {
     public async getEvents(queryFilters: Record<string, string>): Promise<any> {
         const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
         const filterOut = !!queryFilters.filterOut;
+        const page = queryFilters.page ? parseInt(queryFilters.page.toString().trim()) : 0;
+        const limit = queryFilters.limit ? parseInt(queryFilters.limit.toString().trim()) : 20;
 
         let query = `SELECT
                 events.id AS event_id,
@@ -111,10 +113,15 @@ class EventsService {
                 query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
                 query = query.concat(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
             }
+
+            query = query.concat(query.includes("WHERE") ? " AND " : " WHERE ");
+            query = query.concat(`events.time ${filterOut ? ">" : "<"}= CURRENT_TIMESTAMP`);
         }
 
         query = query.concat(` GROUP BY
-        events.id, users.firstname ${participantIdFilter ? ", participants.status" : ""};`);
+        events.id, users.firstname ${participantIdFilter ? ", participants.status" : ""} 
+            ORDER BY events.time ASC 
+            LIMIT ${limit} OFFSET ${ page * limit}`);
 
         const res = await pool.query(query);
         return res.rows;
