@@ -75,6 +75,7 @@ class EventsService {
 
     public async getEvents(queryFilters: Record<string, string>): Promise<any> {
         const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
+        const withParticipants = !!queryFilters.withParticipants;
         const filterOut = !!queryFilters.filterOut;
         const page = queryFilters.page ? parseInt(queryFilters.page.toString().trim()) : 0;
         const limit = queryFilters.limit ? parseInt(queryFilters.limit.toString().trim()) : 20;
@@ -89,6 +90,20 @@ class EventsService {
                 events.remaining - COUNT(participants.id) AS remaining,
                 users.firstname AS owner_firstname
                 ${participantIdFilter ? ", participants.status as participant_status" : ""}
+                ${withParticipants ? `, CASE
+                WHEN COUNT(participants.id) > 0 THEN
+                    ARRAY_AGG(
+                        JSON_BUILD_OBJECT(
+                            'user_id', participants.user_id,
+                            'status', participants.status,
+                            'firstname', users.firstname,
+                            'lastname', users.lastname,
+                            'phone_number', users.phone_number
+                        )
+                    )
+                ELSE
+                    ARRAY[]::JSON[]
+            END AS participants` : ""}
             FROM
                 events
             JOIN
@@ -155,6 +170,8 @@ class EventsService {
         events.id, users.firstname ${participantIdFilter ? ", participants.status" : ""} 
             ORDER BY events.schedule ASC 
             LIMIT ${limit} OFFSET ${ page * limit}`);
+
+        console.log(query);
 
         const res = await pool.query(query);
         return res.rows;

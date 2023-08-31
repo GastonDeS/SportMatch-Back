@@ -115,5 +115,40 @@ export const createDBTables = async (): Promise<void>  => {
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
         (1, 2, false);`);
 
+    // (await pool.query(`SELECT
+    //         events.id AS event_id,
+    //         events.description,
+    //         events.schedule,
+    //         events.location,
+    //         events.expertise,
+    //         events.sport_id,
+    //         events.remaining - COUNT(participants.id) AS remaining,
+    //         users.firstname AS owner_firstname,
+    //         CASE
+    //     WHEN COUNT(participants.id) > 0 THEN
+    //         ARRAY_AGG(
+    //             JSON_BUILD_OBJECT(
+    //                 'user_id', participants.user_id,
+    //                 'status', participants.status,
+    //                 'firstname', users.firstname,
+    //                 'lastname', users.lastname,
+    //                 'phone_number', users.phone_number
+    //             )
+    //         )
+    //     ELSE
+    //         ARRAY[]::JSON[]
+    // END AS participants
+    //     FROM
+    //         events
+    //     LEFT JOIN
+    //         participants ON events.id = participants.event_id
+    //     LEFT JOIN
+    //         users ON events.owner_id = users.id OR participants.user_id = users.id
+    //     WHERE events.schedule >= CURRENT_TIMESTAMP GROUP BY
+    //         events.id, users.firstname, users.id
+    //         HAVING events.owner_id = users.id
+    //     ORDER BY events.schedule ASC 
+    //     LIMIT 20 OFFSET 0`)).rows.map((row: any) => console.log(row));
+
 }
 
