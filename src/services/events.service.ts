@@ -142,8 +142,6 @@ class EventsService {
         queryBuilder.addOrderBy(`events.schedule ASC `);
         queryBuilder.addPagination(page, limit);
 
-        console.log(queryBuilder.build());
-
         const res = await pool.query(queryBuilder.build());
         return res.rows;
     }
