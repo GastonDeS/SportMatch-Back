@@ -1,5 +1,5 @@
 import { TIME_OF_DAY } from "../constants/events.constants";
-import pool from "../database/postgres.database";
+import pool, { QueryBuilder } from "../database/postgres.database";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -80,27 +80,27 @@ class EventsService {
         const page = queryFilters.page ? parseInt(queryFilters.page.toString().trim()) : 0;
         const limit = queryFilters.limit ? parseInt(queryFilters.limit.toString().trim()) : 20;
 
-        let query = `SELECT
-                events.id AS event_id,
-                events.description,
-                events.schedule,
-                events.location,
-                events.expertise,
-                events.sport_id,
-                events.remaining - COUNT(participants.id) AS remaining,
-                users.firstname AS owner_firstname
-                ${participantIdFilter ? ", participants.status as participant_status" : ""}
-                ${withParticipants ? `, CASE
-                WHEN COUNT(participants.id) > 0 THEN
-                    ARRAY_AGG(
-                        JSON_BUILD_OBJECT(
-                            'user_id', participants.user_id,
-                            'status', participants.status,
-                            'firstname', users.firstname,
-                            'lastname', users.lastname,
-                            'phone_number', users.phone_number
-                        )
+        const queryBuilder = new QueryBuilder(`SELECT
+            events.id AS event_id,
+            events.description,
+            events.schedule,
+            events.location,
+            events.expertise,
+            events.sport_id,
+            events.remaining - COUNT(participants.id) AS remaining,
+            users.firstname AS owner_firstname
+            ${participantIdFilter ? ", participants.status as participant_status" : ""}
+            ${withParticipants ? `, CASE
+            WHEN COUNT(participants.id) > 0 THEN
+                ARRAY_AGG(
+                    JSON_BUILD_OBJECT(
+                        'user_id', participants.user_id,
+                        'status', participants.status,
+                        'firstname', users.firstname,
+                        'lastname', users.lastname,
+                        'phone_number', users.phone_number
                     )
+                )
                 ELSE
                     ARRAY[]::JSON[]
             END AS participants` : ""}
@@ -109,71 +109,42 @@ class EventsService {
             JOIN
                 users ON events.owner_id = users.id
             LEFT JOIN
-                participants ON events.id = participants.event_id\n`;
+                participants ON events.id = participants.event_id\n`);
 
 
-        let filtersActive = false;
-        if (queryFilters != undefined) {
+        if (queryFilters !== undefined) {
             const sportId = queryFilters.sportId?.toString().trim();
-            if (sportId !== undefined) {
-                query = query.concat(` WHERE sport_id = ${sportId}`);
-                filtersActive = true;
-            }
-    
+            if (sportId !== undefined) queryBuilder.addFilter(`sport_id = ${sportId}`);
+
             const userId = queryFilters.userId?.toString().trim();
-            if (userId !== undefined) {
-                query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
-                filtersActive = true;
-            }
+            if (userId !== undefined) queryBuilder.addFilter(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
     
             const participantId = queryFilters.participantId?.toString().trim();
-            if (participantIdFilter) {
-                query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(`participants.user_id = ${participantId}`);
-                filtersActive = true;
-            }
+            if (participantIdFilter) queryBuilder.addFilter(`participants.user_id = ${participantId}`);
 
             const location = queryFilters.location?.toString().trim();
-            if (location !== undefined) {
-                query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(`events.location = '${location}'`);
-                filtersActive = true;
-            }
+            if (location !== undefined) queryBuilder.addFilter(`events.location = '${location}'`);
 
             const expertise = queryFilters.expertise?.toString().trim();
-            if (expertise !== undefined) {
-                query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(`events.expertise = ${expertise}`);
-                filtersActive = true;
-            }
+            if (expertise !== undefined) queryBuilder.addFilter(`events.expertise = ${expertise}`);
 
             const date = queryFilters.date?.toString();
-            if (date !== undefined) {
-                query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(`TO_CHAR(schedule, 'YYYY-MM-DD') = '${date}'`);
-                filtersActive = true;
-            }
+            if (date !== undefined) queryBuilder.addFilter(`TO_CHAR(schedule, 'YYYY-MM-DD') = '${date}'`);
 
             const schedule = queryFilters.schedule?.toString().trim();
-            if (schedule !== undefined) {
-                query = query.concat(filtersActive ? " AND " : " WHERE ");
-                query = query.concat(this.getTimeEventFilter(schedule));
-                filtersActive = true;
-            }
+            if (schedule !== undefined) queryBuilder.addFilter(this.getTimeEventFilter(schedule));
 
-            query = query.concat(filtersActive ? " AND " : " WHERE ");
-            query = query.concat(`events.schedule >= CURRENT_TIMESTAMP`);
+            queryBuilder.addFilter(`events.schedule >= CURRENT_TIMESTAMP`);
         }
 
-        query = query.concat(` GROUP BY
-        events.id, users.firstname ${participantIdFilter ? ", participants.status" : ""} 
-            ORDER BY events.schedule ASC 
-            LIMIT ${limit} OFFSET ${ page * limit}`);
+        queryBuilder.addGroupBy(`events.id, users.firstname`);
+        if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
+        queryBuilder.addOrderBy(`events.schedule ASC `);
+        queryBuilder.addPagination(page, limit);
 
-        console.log(query);
+        console.log(queryBuilder.build());
 
-        const res = await pool.query(query);
+        const res = await pool.query(queryBuilder.build());
         return res.rows;
     }
 
