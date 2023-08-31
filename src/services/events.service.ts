@@ -52,7 +52,7 @@ class EventsService {
         const query = `SELECT
                 events.id AS event_id,
                 events.description,
-                events.schedule,
+                events.schedule::text,
                 events.location,
                 events.expertise,
                 events.sport_id,
@@ -83,7 +83,7 @@ class EventsService {
         const queryBuilder = new QueryBuilder(`SELECT
             events.id AS event_id,
             events.description,
-            events.schedule,
+            events.schedule::text as schedule,
             events.location,
             events.expertise,
             events.sport_id,

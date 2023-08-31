@@ -9,7 +9,7 @@ export const createDBTables = async (): Promise<void>  => {
     await pool.query(`DROP TABLE IF EXISTS sports;`);
     await pool.query(`DROP TABLE IF EXISTS users;`);
 
-    await pool.query(`SET timezone = 'America/Buenos_Aires'`);
+    // await pool.query(`SET timezone = 'None'`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id serial PRIMARY KEY,
@@ -108,7 +108,7 @@ export const createDBTables = async (): Promise<void>  => {
         (1, 'Football match', 1, '2023-09-01 20:00:00', 'Almagro', 1, 1),
         (2, 'Football match', 1, '2023-09-01 10:00:00', 'Caballito', 1, 1),
         (2, 'Basket match', 2, '2023-09-02 9:00:00', 'Chacarita', 1, 1),
-	 (3, 'Nuevo partido', 3, '2023-09-04 11:00:00', 'Agronomía', 2, 3);`);
+	    (3, 'Nuevo partido', 3, '2023-09-04 11:00:00', 'Agronomía', 2, 3);`);
 
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
         (2, 1, true);`);
