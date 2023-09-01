@@ -37,6 +37,10 @@ class UsersService {
         return user.rows[0];
     }
 
+    public async rateUser(rated: string, rater: string, rating: number, eventId: string): Promise<any> {
+        await pool.query(`INSERT INTO ratings(rated, rater, rating, eventId) VALUES($1, $2, $3, $4);`, [rated, rater, rating, eventId]);
+    }
+
     public async createUser(email: string, firstname: string, lastname: string, phone_number: string): Promise<any> {
         const users = await pool.query(`INSERT INTO users(email, firstname, lastname, phone_number) VALUES($1, $2, $3, $4) RETURNING *;`, [email, firstname, lastname, phone_number]);
         return users.rows[0];

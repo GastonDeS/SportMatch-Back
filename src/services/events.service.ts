@@ -88,9 +88,9 @@ class EventsService {
             events.expertise,
             events.sport_id,
             events.remaining - COUNT(participants.id) AS remaining,
-            users.firstname AS owner_firstname
-            ${participantIdFilter ? ", participants.status as participant_status" : ""}
-            ${withParticipants ? `, CASE
+            users.firstname AS owner_firstname,
+            ${participantIdFilter ? "participants.status as participant_status," : ""}
+            ${withParticipants ? `CASE
             WHEN COUNT(participants.id) > 0 THEN
                 ARRAY_AGG(
                     JSON_BUILD_OBJECT(
@@ -98,19 +98,25 @@ class EventsService {
                         'status', participants.status,
                         'firstname', users.firstname,
                         'lastname', users.lastname,
-                        'phone_number', users.phone_number
+                        'phone_number', users.phone_number,
+                        'rating', rate.rating,
+                        'count', rate.count
                     )
                 )
                 ELSE
                     ARRAY[]::JSON[]
-            END AS participants` : ""}
+            END AS participants,` : ""}
+            rate.rating::float,
+            rate.count::integer
             FROM
                 events
             JOIN
                 users ON events.owner_id = users.id
             LEFT JOIN
-                participants ON events.id = participants.event_id\n`);
-
+                participants ON events.id = participants.event_id
+            LEFT JOIN (
+                SELECT rated, avg(rating) as rating, count(rating) as count FROM ratings GROUP BY rated
+            ) as rate ON events.owner_id = rate.rated OR participants.user_id = rate.rated            \n`);
 
         if (queryFilters !== undefined) {
             const sportId = queryFilters.sportId?.toString().trim();
@@ -139,8 +145,11 @@ class EventsService {
 
         queryBuilder.addGroupBy(`events.id, users.firstname`);
         if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
+        queryBuilder.addGroupBy(`rate.rating, rate.count`);
         queryBuilder.addOrderBy(`events.schedule ASC `);
         queryBuilder.addPagination(page, limit);
+
+        console.log(queryBuilder.build());
 
         const res = await pool.query(queryBuilder.build());
         return res.rows;
@@ -154,7 +163,7 @@ class EventsService {
          ((EXTRACT(HOUR FROM events.schedule) >= 6 AND EXTRACT(HOUR FROM events.schedule) < 12 AND 0 = ANY('${times}')) OR
         (EXTRACT(HOUR FROM events.schedule) >= 12 AND EXTRACT(HOUR FROM events.schedule) < 18 AND 1 = ANY('${times}')) OR
         ((EXTRACT(HOUR FROM events.schedule) >= 18 OR EXTRACT(HOUR FROM events.schedule) < 6) AND 2 = ANY('${times}')))
-        `
+        `;
     }
 
     public async createEvent(
