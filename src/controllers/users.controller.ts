@@ -32,6 +32,26 @@ class UsersController {
     }
 
     @validateBody(Joi.object({
+        rater: Joi.string().required(),
+        rating: Joi.number().required(),
+        eventId: Joi.number().required()
+    }))
+    @validateParams(Joi.object({
+        rated: Joi.string().required()
+    }))
+    public async rateUser(req: Request, res: Response, next: NextFunction) {
+        const { rater, rating, eventId } = req.body;
+        const rated = req.params.rated;
+
+        try {
+            await this.usersService.rateUser(rated, rater, rating, eventId);
+            res.status(HTTP_STATUS.OK).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @validateBody(Joi.object({
         email: Joi.string().email().required(),
         firstname: Joi.string().required(),
         lastname: Joi.string().required(),

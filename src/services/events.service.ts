@@ -40,10 +40,14 @@ class EventsService {
                             users.firstname as firstname,
                             users.lastname as lastname,
                             participants.status as participant_status,
-                            users.phone_number as phone_number
+                            users.phone_number as phone_number,
+                            avg(rating)::float as rating,
+                            count(rating)::integer as count
                         FROM participants 
                             left outer join users on participants.user_id = users.id
-                        WHERE event_id = ${eventId}`;
+                            left outer join ratings on participants.user_id = ratings.rated
+                        WHERE participants.event_id = ${eventId}
+                        GROUP BY participants.user_id, users.firstname, users.lastname, participants.status, users.phone_number`;
         const res = await pool.query(query);
         return res.rows;
     }
@@ -75,7 +79,6 @@ class EventsService {
 
     public async getEvents(queryFilters: Record<string, string>): Promise<any> {
         const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
-        const withParticipants = !!queryFilters.withParticipants;
         const filterOut = !!queryFilters.filterOut;
         const page = queryFilters.page ? parseInt(queryFilters.page.toString().trim()) : 0;
         const limit = queryFilters.limit ? parseInt(queryFilters.limit.toString().trim()) : 20;
@@ -90,22 +93,6 @@ class EventsService {
             events.remaining - COUNT(participants.id) AS remaining,
             users.firstname AS owner_firstname,
             ${participantIdFilter ? "participants.status as participant_status," : ""}
-            ${withParticipants ? `CASE
-            WHEN COUNT(participants.id) > 0 THEN
-                ARRAY_AGG(
-                    JSON_BUILD_OBJECT(
-                        'user_id', participants.user_id,
-                        'status', participants.status,
-                        'firstname', users.firstname,
-                        'lastname', users.lastname,
-                        'phone_number', users.phone_number,
-                        'rating', rate.rating,
-                        'count', rate.count
-                    )
-                )
-                ELSE
-                    ARRAY[]::JSON[]
-            END AS participants,` : ""}
             rate.rating::float,
             rate.count::integer
             FROM
@@ -116,7 +103,7 @@ class EventsService {
                 participants ON events.id = participants.event_id
             LEFT JOIN (
                 SELECT rated, avg(rating) as rating, count(rating) as count FROM ratings GROUP BY rated
-            ) as rate ON events.owner_id = rate.rated OR participants.user_id = rate.rated            \n`);
+            ) as rate ON events.owner_id = rate.rated\n`);
 
         if (queryFilters !== undefined) {
             const sportId = queryFilters.sportId?.toString().trim();

@@ -38,7 +38,10 @@ class UsersService {
     }
 
     public async rateUser(rated: string, rater: string, rating: number, eventId: string): Promise<any> {
-        await pool.query(`INSERT INTO ratings(rated, rater, rating, eventId) VALUES($1, $2, $3, $4);`, [rated, rater, rating, eventId]);
+        await pool.query(`INSERT INTO ratings(rated, rater, rating, event_id) 
+        SELECT ${rated}, ${rater}, ${rating}, ${eventId}
+        FROM events
+        WHERE id = ${eventId} AND CURRENT_TIMESTAMP > schedule;`, [rated, rater, rating, eventId]);
     }
 
     public async createUser(email: string, firstname: string, lastname: string, phone_number: string): Promise<any> {

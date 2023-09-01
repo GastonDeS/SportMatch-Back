@@ -92,7 +92,7 @@ export const createDBTables = async (): Promise<void>  => {
         rated integer REFERENCES users (id),
         rater integer REFERENCES users (id),
         rating integer,
-        eventId integer REFERENCES events (id),
+        event_id integer REFERENCES events (id),
         CONSTRAINT fk_rated
             FOREIGN KEY(rated)
                 REFERENCES users(id),
@@ -100,9 +100,9 @@ export const createDBTables = async (): Promise<void>  => {
             FOREIGN KEY(rater)
                 REFERENCES users(id),
         CONSTRAINT fk_event
-            FOREIGN KEY(eventId)
+            FOREIGN KEY(event_id)
                 REFERENCES events(id),
-        CONSTRAINT unique_rating UNIQUE(rated, rater, eventId),
+        CONSTRAINT unique_rating UNIQUE(rated, rater, event_id),
         CONSTRAINT check_rating CHECK(rating >= 1 AND rating <= 5) );`
     );
 
@@ -134,9 +134,15 @@ export const createDBTables = async (): Promise<void>  => {
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
         (1, 2, false);`);
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (1, 3, false);`);
+        (4, 1, false);`);
 
-    await pool.query(`INSERT INTO ratings (rated, rater, rating, eventId) VALUES
-        (2, 1, 5, 1);`);
+    await pool.query(`INSERT INTO ratings (rated, rater, rating, event_id) VALUES
+        (3, 1, 5, 4);`);
+
+    await pool.query(`INSERT INTO ratings(rated, rater, rating, event_id) 
+        SELECT 1, 3, 4, 4
+        FROM events
+        WHERE id = 4 AND CURRENT_TIMESTAMP > schedule;`);
+    pool.query(`SELECT * FROM ratings;`).then(res => console.log(res.rows));
 }
 

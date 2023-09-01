@@ -18,6 +18,7 @@ export default class UsersRoutes {
 
         this.router.get('/', this.controller.getUsers);
         this.router.post('/', this.controller.createUser);
+        this.router.post('/:userId/rate', this.controller.rateUser);
         this.router.put('/:userId', this.controller.updateUser);
     }
 }
