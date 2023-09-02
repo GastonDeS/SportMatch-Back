@@ -49,8 +49,6 @@ class EventsController {
     }))
     @HttpRequestInfo("/events", HTTP_METHODS.GET)
     public async getEvents(req: Request, res: Response, next: NextFunction) {
-        console.log(req.originalUrl);
-        console.log(req.method);
         const queryFilters = req.query as Record<string, string>;
         
         try {
