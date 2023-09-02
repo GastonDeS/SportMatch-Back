@@ -4,9 +4,10 @@ import cors from 'cors';
 import ErrorHandlerMiddleware from './middlewares/errorHandler.middleware';
 import HealthRoutes from './routes/health.routes';
 import pool from './database/postgres.database';
-import { createDBTables } from './localHelper/dblocalHelper';
+import { createDBTables } from './utils/dblocalHelper';
 import UsersRoutes from './routes/users.routes';
 import EventsRoutes from './routes/events.routes';
+import initializeSwagger from './utils/swaggerDocumentation/swagger.main';
 
 class App {
     public app: Application;
@@ -24,6 +25,7 @@ class App {
 
         this.initializeRoutes();
         this.initializeErrorHandling();
+        this.initializeSwaggerApp();
     }
 
     private configureExpress(): void {
@@ -70,6 +72,10 @@ class App {
         //         console.log(err);
         //     });
         // });
+    }
+
+    private initializeSwaggerApp(): void {
+        initializeSwagger(this.app);
     }
 
     private initializeErrorHandling(): void {

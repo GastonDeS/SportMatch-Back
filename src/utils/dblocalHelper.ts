@@ -122,9 +122,9 @@ export const createDBTables = async (): Promise<void>  => {
 	(1, 'Belgrano');`);
 
     await pool.query(`INSERT INTO events (owner_id, description, sport_id, schedule, location, expertise, remaining) VALUES
-        (1, 'Football match', 1, '2023-09-01 20:00:00', 'Almagro', 1, 1),
-        (2, 'Football match', 1, '2023-09-01 10:00:00', 'Caballito', 1, 1),
-        (2, 'Basket match', 2, '2023-09-02 9:00:00', 'Chacarita', 1, 1),
+        (1, 'Football match', 1, '2023-10-01 20:00:00', 'Almagro', 1, 1),
+        (2, 'Football match', 1, '2023-10-01 10:00:00', 'Caballito', 1, 1),
+        (2, 'Basket match', 2, '2023-11-02 9:00:00', 'Chacarita', 1, 1),
 	    (3, 'Nuevo partido', 3, '2022-09-04 11:00:00', 'Agronomía', 2, 3);`);
 
     await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
