@@ -10,6 +10,20 @@ const swaggerAPI = {
     description: 'Sports Match App API',
   },
   paths: SwaggerBuilder.getInstance().build(),
+  tags: [
+    {
+      name: 'Users',
+      description: 'Endpoints related to user management.',
+    },
+    {
+      name: 'Events',
+      description: 'Endpoints related to event management.',
+    },
+    {
+      name: 'Health',
+      description: 'Endpoints for health check.',
+    },
+  ],
   components: {
     schemas: {
       IErrorData: {
@@ -35,7 +49,7 @@ const swaggerAPI = {
   },
 };
 
-console.log(JSON.stringify(swaggerAPI));
+// console.log(JSON.stringify(swaggerAPI));
 
 function initializeSwagger(app: Application) {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerAPI));

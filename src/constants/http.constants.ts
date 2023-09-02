@@ -31,3 +31,18 @@ export enum HTTP_STATUS {
     SERVICE_UNAVAILABLE = 503,
     GATEWAY_TIMEOUT = 504,
 }
+
+export enum HTTP_METHODS {
+    GET = 'get',
+    POST = 'post',
+    PUT = 'put',
+    DELETE = 'delete',
+    PATCH = 'patch',
+}
+
+export enum HTTP_PARAMETERS {
+    BODY = 'body',
+    QUERY = 'query',
+    HEADER = 'header',
+    PATH = 'path',
+}

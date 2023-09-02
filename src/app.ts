@@ -64,14 +64,6 @@ class App {
         this.app.use('/health', new HealthRoutes().router);
         this.app.use('/users', new UsersRoutes().router);
         this.app.use('/events', new EventsRoutes().router);
-
-        // createDBTables().then(() => {
-        //     test().then(() => {
-        //         console.log("Connected to DB");
-        //     }).catch((err) => {
-        //         console.log(err);
-        //     });
-        // });
     }
 
     private initializeSwaggerApp(): void {

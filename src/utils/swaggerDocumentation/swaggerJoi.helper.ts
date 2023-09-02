@@ -1,11 +1,16 @@
 import Joi from "joi";
-import { ValidationSource } from "../../middlewares/validation.middleware";
+import { HTTP_PARAMETERS } from "../../constants/http.constants";
+
+export function translateExpressToSwaggerHttpParameters(source: HTTP_PARAMETERS) {
+  if (source === HTTP_PARAMETERS.PATH) return HTTP_PARAMETERS.PATH;
+  return source;
+}
 
 // Translate Joi schema to Swagger parameter definitions
-export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: ValidationSource): any[] {
+export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_PARAMETERS): any[] {
   const swaggerParameters: any[] = [];
 
-  if (source === ValidationSource.BODY) {
+  if (source === HTTP_PARAMETERS.BODY) {
     const requestBodySchema: any = {
       type: 'object',
       properties: {},

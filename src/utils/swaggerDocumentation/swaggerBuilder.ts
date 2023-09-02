@@ -1,4 +1,5 @@
 import { SwaggerEndpointBuilder } from './SwaggerEndpointBuilder';
+import { SwaggerEndpoint } from './swagger.interface';
 
 export class SwaggerBuilder {
   private static instance: SwaggerBuilder | null = null; // Singleton instance
@@ -22,6 +23,17 @@ export class SwaggerBuilder {
     if (!this.paths[path][method]) {
       this.paths[path][method] = {};
     }
+    return new SwaggerEndpointBuilder(this.paths[path][method]);
+  }
+
+  addEndpointBuilder(path: string, method: string, endpointBuilder?: SwaggerEndpoint): SwaggerEndpointBuilder {
+    if (!this.paths[path]) {
+      this.paths[path] = {};
+    }
+    if (!this.paths[path][method]) {
+      this.paths[path][method] = {};
+    }
+    this.paths[path][method] = {...this.paths[path][method],...endpointBuilder};
     return new SwaggerEndpointBuilder(this.paths[path][method]);
   }
 

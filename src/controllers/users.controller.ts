@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import UsersService from "../services/user.service";
-import { HTTP_STATUS } from "../constants/http.constants";
+import { HTTP_METHODS, HTTP_STATUS } from "../constants/http.constants";
 import { autobind } from "core-decorators";
-import { validateBody, validateParams, validateQuery } from "../middlewares/validation.middleware";
+import { HttpRequestInfo, validateBody, validateParams, validateQuery } from "../middlewares/validation.middleware";
 import Joi from "joi";
 import { document } from "../utils/swaggerDocumentation/annotations";
-import { SwaggerBuilder } from "../utils/swaggerDocumentation/swaggerBuilder";
+import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
 
 
 @autobind
@@ -16,7 +16,7 @@ class UsersController {
         this.usersService = UsersService.getInstance();
     }
 
-    @document(SwaggerBuilder.getInstance().path("/users", "get")
+    @document(SwaggerEndpointBuilder.create()
         .responses({
             "200": {
                 description: "OK",
@@ -28,7 +28,8 @@ class UsersController {
     .build())
     @validateQuery(Joi.object({
         email: Joi.string().email().optional(),
-    }), "/users", "get")
+    }))
+    @HttpRequestInfo("/users", HTTP_METHODS.GET)
     public async getUsers(req: Request, res: Response, next: NextFunction) {
         try {
             if (req.query.email) {
@@ -43,7 +44,7 @@ class UsersController {
         }
     }
 
-    @document(SwaggerBuilder.getInstance().path("/users/:userId/rate", "post")
+    @document(SwaggerEndpointBuilder.create()
         .responses({
             "201": {
                 description: "created"
@@ -54,13 +55,14 @@ class UsersController {
         rater: Joi.string().required(),
         rating: Joi.number().required(),
         eventId: Joi.number().required()
-    }), "/users/:userId/rate", "post")
+    }))
     @validateParams(Joi.object({
-        rated: Joi.string().required()
-    }), "/users/:userId/rate", "post")
+        userId: Joi.string().required()
+    }))
+    @HttpRequestInfo("/users/:userId/rate", HTTP_METHODS.POST)
     public async rateUser(req: Request, res: Response, next: NextFunction) {
         const { rater, rating, eventId } = req.body;
-        const rated = req.params.rated;
+        const rated = req.params.userId;
 
         try {
             await this.usersService.rateUser(rated, rater, rating, eventId);
@@ -70,7 +72,7 @@ class UsersController {
         }
     }
 
-    @document(SwaggerBuilder.getInstance().path("/users", "post")
+    @document(SwaggerEndpointBuilder.create()
         .responses({
             "200": {
                 description: "OK",
@@ -83,7 +85,8 @@ class UsersController {
         firstname: Joi.string().required(),
         lastname: Joi.string().required(),
         phone_number: Joi.string().required()
-    }), "/users", "post")
+    }))
+    @HttpRequestInfo("/users", HTTP_METHODS.POST)
     public async createUser(req: Request, res: Response, next: NextFunction) {
         const { email, firstname, lastname, phone_number } = req.body;
 
@@ -96,7 +99,7 @@ class UsersController {
     }
 
 
-    @document(SwaggerBuilder.getInstance().path("/users/:userId", "put")
+    @document(SwaggerEndpointBuilder.create()
         .responses({
             "200": {
                 description: "OK",
@@ -106,12 +109,13 @@ class UsersController {
     )
     @validateParams(Joi.object({
         userId: Joi.string().required()
-    }), "/users/:userId", "put")
+    }))
     @validateBody(Joi.object({
         phone_number: Joi.string().optional(),
         locations: Joi.array().items(Joi.string()).optional(),
         sports: Joi.array().items(Joi.string()).optional()
-    }), "/users/:userId", "put")
+    }))
+    @HttpRequestInfo("/users/:userId", HTTP_METHODS.PUT)
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const userId = req.params.userId;
         const { phone_number, locations, sports } = req.body;

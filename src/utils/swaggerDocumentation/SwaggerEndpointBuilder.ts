@@ -3,8 +3,12 @@ import { SwaggerEndpoint, SwaggerParameter, SwaggerResponse } from "./swagger.in
 export class SwaggerEndpointBuilder {
     private endpoint: SwaggerEndpoint;
   
-    constructor(private pathObject: SwaggerEndpoint) {
-      this.endpoint = pathObject;
+    constructor(private pathObject?: SwaggerEndpoint) {
+      this.endpoint = pathObject ?? {};
+    }
+
+    static create(): SwaggerEndpointBuilder {
+        return new SwaggerEndpointBuilder();
     }
 
     summary(summary: string): this {

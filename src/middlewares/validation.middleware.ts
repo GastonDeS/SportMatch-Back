@@ -3,6 +3,7 @@ import Joi from 'joi';
 import GenericException from '../exceptions/generic.exception';
 import { SwaggerBuilder } from '../utils/swaggerDocumentation/swaggerBuilder';
 import { translateJoiToSwagger } from '../utils/swaggerDocumentation/swaggerJoi.helper';
+import { HTTP_METHODS, HTTP_PARAMETERS } from '../constants/http.constants';
 
 // this function is weird because of the way the enum is defined in typescript
 export const JoiEnum = (enumObject: any) => {
@@ -12,29 +13,24 @@ export const JoiEnum = (enumObject: any) => {
     return Joi.object().valid(...enumValues);
 }
 
-type validateType = (schema: Joi.ObjectSchema, path?: string, method?: string) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void
+type validateType = (schema: Joi.ObjectSchema) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void
 
-export const validateQuery: validateType = (schema, path, method) => {
-    return validationHelper(schema, ValidationSource.QUERY, path, method);
+export const validateQuery: validateType = (schema) => {
+    return validationHelper(schema, HTTP_PARAMETERS.QUERY);
 };
 
-export const validateBody: validateType = (schema, path, method) => {
-    return validationHelper(schema, ValidationSource.BODY, path, method);
+export const validateBody: validateType = (schema) => {
+    return validationHelper(schema, HTTP_PARAMETERS.BODY);
 };
 
-export const validateParams: validateType = (schema, path, method) => {
-    return validationHelper(schema, ValidationSource.PARAM, path, method);
+export const validateParams: validateType = (schema) => {
+    return validationHelper(schema, HTTP_PARAMETERS.PATH);
 };
 
-export enum ValidationSource {
-    BODY = 'body',
-    QUERY = 'query',
-    PARAM = 'params',
-}
-
-const validationHelper = (schema: Joi.ObjectSchema, source: ValidationSource, path?: string, method?: string) => {
-    if (path) SwaggerBuilder.getInstance().path(path, method ?? "get").parameters(translateJoiToSwagger(schema, source)).build();
+const validationHelper = (schema: Joi.ObjectSchema, source: HTTP_PARAMETERS) => {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+        const reqData = (target.__httpRequestInfo ?? {})[propertyKey] as any;
+        if (reqData) SwaggerBuilder.getInstance().addEndpointBuilder(reqData.originalUrl, reqData.method ?? HTTP_METHODS.GET).parameters(translateJoiToSwagger(schema, source)).build();
         const originalMethod = descriptor.value;
         descriptor.value = function async (req: Request, res: Response, next: NextFunction) {
             const { error } = schema.validate(req[source]);
@@ -50,3 +46,12 @@ const validationHelper = (schema: Joi.ObjectSchema, source: ValidationSource, pa
         };
     };
 }
+
+export const HttpRequestInfo = (originalUrl: string, method: string) => {
+    return (target: any, key: string) => {
+      if (!target.__httpRequestInfo) {
+        target.__httpRequestInfo = {};
+      }
+      target.__httpRequestInfo[key] = { originalUrl, method };
+    };
+  };
