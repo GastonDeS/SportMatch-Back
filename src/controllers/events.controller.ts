@@ -18,17 +18,7 @@ class EventsController {
     }
 
     
-    @document(SwaggerBuilder.getInstance().path("/events")
-        .parameters([
-            SwaggerParameterBuilder.create("participantId").location("query").description("Participant id").required(false).type("string").build(),
-            SwaggerParameterBuilder.create("sportId").location("query").description("Sport id").required(false).type("string").build(),
-            SwaggerParameterBuilder.create("userId").location("query").description("User id").required(false).type("string").build(),
-            SwaggerParameterBuilder.create("filterOut").location("query").description("Filter out").required(false).type("boolean").build(),
-            SwaggerParameterBuilder.create("location").location("query").description("Location").required(false).type("string").build(),
-            SwaggerParameterBuilder.create("expertise").location("query").description("Expertise").required(false).type("string").build(),
-            SwaggerParameterBuilder.create("schedule").location("query").description("Schedule").required(false).type("string").build(),
-            SwaggerParameterBuilder.create("date").location("query").description("Date").required(false).type("string").build()
-        ])
+    @document(SwaggerBuilder.getInstance().path("/events", "get")
         .responses({
             "200": {
                 description: "OK",
@@ -58,24 +48,19 @@ class EventsController {
         expertise: Joi.string().optional(),
         schedule: Joi.string().optional(),
         date: Joi.string().optional(),
-    }))
+    }), "/events", "get")
     public async getEvents(req: Request, res: Response, next: NextFunction) {
         const queryFilters = req.query as Record<string, string>;
         
-        console.log(queryFilters);
         try {
             const events = await this.eventsService.getEvents(queryFilters);
-            console.log(events);
             res.status(HTTP_STATUS.OK).send(events);
         } catch (err) {
             next(err);
         }
     }
 
-    @document(SwaggerBuilder.getInstance().path("/events/{eventId}")
-        .parameters([
-            SwaggerParameterBuilder.create("eventId").location("path").description("Event id").required(true).type("string").build()
-        ])
+    @document(SwaggerBuilder.getInstance().path("/events/{eventId}", "get")
         .responses({
             "200": {
                 description: "OK",
@@ -87,7 +72,7 @@ class EventsController {
     .build())
     @validateParams(Joi.object({
         eventId: Joi.number().required()
-    }))
+    }), "/events/{eventId}", "get")
     public async getEventById(req: Request, res: Response, next: NextFunction) {
         const eventId = parseInt(req.params.eventId);
 
@@ -100,6 +85,16 @@ class EventsController {
     }
 
     // TODO: get owner id from validator
+    @document(SwaggerBuilder.getInstance().path("/events", "post")
+        .responses({
+            "201": {
+                description: "Created",
+                schema: {
+                    type: "object",
+                }
+            }
+        })
+    .build())
     @validateBody(Joi.object({
         owner_id: Joi.number().required(),
         sport_id: Joi.number().required(),
@@ -108,7 +103,7 @@ class EventsController {
         location: Joi.string().required(),
         remaining: Joi.number().required(),
         description: Joi.string().optional()
-    }))
+    }), "/events", "post")
     public async createEvent(req: Request, res: Response, next: NextFunction) {
         const { owner_id, sport_id, expertise, description, schedule, location, remaining } = req.body;
 
@@ -120,12 +115,22 @@ class EventsController {
         }
     }
 
+    @document(SwaggerBuilder.getInstance().path("/events/:eventId/participants", "put")
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                }
+            }
+        })
+    .build())
     @validateParams(Joi.object({
         eventId: Joi.number().required()
-    }))
+    }), "/events/:eventId/participants", "put")
     @validateBody(Joi.object({
         userId: Joi.number().required()
-    }))
+    }), "/events/:eventId/participants", "put")
     public async addParticipant(req: Request, res: Response, next: NextFunction) {
         const userId = req.body.userId; // TODO get this from validator
         const eventId = parseInt(req.params.eventId);
@@ -137,12 +142,23 @@ class EventsController {
         }
     }
 
+
+    @document(SwaggerBuilder.getInstance().path("/events/:eventId/participants", "delete")
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                }
+            }
+        })
+    .build())
     @validateParams(Joi.object({
         eventId: Joi.number().required()
-    }))
+    }), "/events/:eventId/participants", "delete")
     @validateBody(Joi.object({
         userId: Joi.number().required()
-    }))
+    }), "/events/:eventId/participants", "delete")
     public async removeParticipant(req: Request, res: Response, next: NextFunction) {
         const userId = req.body.userId; // TODO get this from validator
         const eventId = parseInt(req.params.eventId);
@@ -157,12 +173,22 @@ class EventsController {
     /**
      * TODO: this route need owner validation
      */
+    @document(SwaggerBuilder.getInstance().path("/events/:eventId/owner/participants", "put")
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                }
+            }
+        })
+    .build())
     @validateParams(Joi.object({
         eventId: Joi.number().required()
-    }))
+    }), "/events/:eventId/owner/participants", "put")
     @validateBody(Joi.object({
         userId: Joi.number().required()
-    }))
+    }), "/events/:eventId/owner/participants", "put")
     public async acceptParticipant(req: Request, res: Response, next: NextFunction) {
         const userId = req.body.userId;
         const eventId = parseInt(req.params.eventId);
@@ -175,9 +201,19 @@ class EventsController {
         }
     }
 
+    @document(SwaggerBuilder.getInstance().path("/events/:eventId/owner/participants", "get")
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                }
+            }
+        })
+    .build())
     @validateParams(Joi.object({
         eventId: Joi.number().required()
-    }))
+    }), "/events/:eventId/owner/participants", "get")
     public async getParticipants(req: Request, res: Response, next: NextFunction) {
         const eventId = parseInt(req.params.eventId);
 

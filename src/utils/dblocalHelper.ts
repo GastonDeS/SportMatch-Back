@@ -143,6 +143,5 @@ export const createDBTables = async (): Promise<void>  => {
         SELECT 1, 3, 4, 4
         FROM events
         WHERE id = 4 AND CURRENT_TIMESTAMP > schedule;`);
-    pool.query(`SELECT * FROM ratings;`).then(res => console.log(res.rows));
 }
 
