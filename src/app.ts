@@ -61,7 +61,7 @@ class App {
     }
 
     private initializeRoutes(): void {
-        this.app.use('/', new HealthRoutes().router);
+        this.app.use('/health', new HealthRoutes().router);
         this.app.use('/users', new UsersRoutes().router);
         this.app.use('/events', new EventsRoutes().router);
 

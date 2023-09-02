@@ -29,14 +29,11 @@ export class SwaggerEndpointBuilder {
     }
   
     responses(responses: { [key: string]: SwaggerResponse }): this {
-      console.log("this.endpoint.responses1", this.endpoint.responses);
       this.endpoint.responses = responses;
-      console.log("this.endpoint.responses2", this.endpoint.responses);
       return this;
     }
   
     build() {
-      console.log("endpoint", this.endpoint);
       if (this.endpoint.responses === undefined) this.endpoint.responses = {};
       this.endpoint.responses["400"] = {
         description: "Bad Request",
