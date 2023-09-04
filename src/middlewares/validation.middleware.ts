@@ -30,7 +30,8 @@ export const validateParams: validateType = (schema) => {
 const validationHelper = (schema: Joi.ObjectSchema, source: HTTP_PARAMETERS) => {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         const reqData = (target.__httpRequestInfo ?? {})[propertyKey] as any;
-        if (reqData) SwaggerBuilder.getInstance().addEndpointBuilder(reqData.originalUrl, reqData.method ?? HTTP_METHODS.GET).parameters(translateJoiToSwagger(schema, source)).build();
+        if (reqData) SwaggerBuilder.getInstance().addEndpointBuilder(reqData.originalUrl, reqData.method ?? HTTP_METHODS.GET)
+            .addOperationId(propertyKey).parameters(translateJoiToSwagger(schema, source)).build();
         const originalMethod = descriptor.value;
         descriptor.value = function async (req: Request, res: Response, next: NextFunction) {
             const { error } = schema.validate(req[source]);
@@ -52,6 +53,12 @@ export const HttpRequestInfo = (originalUrl: string, method: string) => {
       if (!target.__httpRequestInfo) {
         target.__httpRequestInfo = {};
       }
-      target.__httpRequestInfo[key] = { originalUrl, method };
+      target.__httpRequestInfo[key] = { originalUrl: transformExpressRoute(originalUrl), method };
     };
   };
+
+  function transformExpressRoute(path: string): string {
+    // Use a regular expression to match dynamic route segments
+    const transformedPath = path.replace(/:(\w+)/g, '{$1}');
+    return transformedPath;
+  } 

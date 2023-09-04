@@ -11,7 +11,7 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
   const swaggerParameters: any[] = [];
 
   if (source === HTTP_PARAMETERS.BODY) {
-    const requestBodySchema: any = {
+    const bodySchema: any = {
       type: 'object',
       properties: {},
       required: [],
@@ -25,44 +25,44 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
 
       // Map Joi types to Swagger types
       if (type === 'string') {
-        requestBodySchema.properties[key] = { type: 'string' };
+        bodySchema.properties[key] = { type: 'string' };
       } else if (type === 'number') {
-        requestBodySchema.properties[key] = { type: 'number' };
+        bodySchema.properties[key] = { type: 'number' };
       } else if (type === 'boolean') {
-        requestBodySchema.properties[key] = { type: 'boolean' };
+        bodySchema.properties[key] = { type: 'boolean' };
       } // Add more type mappings as needed
 
       const valids = joiParameter.describe().valids;
       // Translate constraints (e.g., min, max) to Swagger attributes (e.g., minimum, maximum)
       if (valids?.includes(null)) {
-        requestBodySchema.properties[key].nullable = true;
+        bodySchema.properties[key].nullable = true;
       }
       if (valids?.includes(undefined)) {
-        requestBodySchema.properties[key].nullable = true;
+        bodySchema.properties[key].nullable = true;
       }
 
       const tests = joiParameter.describe().tests;
       if (tests) {
         tests.forEach((test: any) => {
           if (test.name === 'min') {
-            requestBodySchema.properties[key].minimum = test.args.limit;
+            bodySchema.properties[key].minimum = test.args.limit;
           }
           if (test.name === 'max') {
-            requestBodySchema.properties[key].maximum = test.args.limit;
+            bodySchema.properties[key].maximum = test.args.limit;
           }
         });
       }
 
       if (flags.presence === 'required') {
-        requestBodySchema.required.push(key);
+        bodySchema.required.push(key);
       }
     });
 
     swaggerParameters.push({
-      name: 'requestBody',
+      name: 'body',
       in: 'body',
       required: true,
-      schema: requestBodySchema,
+      schema: bodySchema,
     });
   } else {
     Object.keys(joiSchema.describe().keys).forEach((key: any) => {
@@ -73,7 +73,7 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
         name: key,
         in: source, // or 'path', 'header', 'cookie', etc., depending on the use case
         description: joiParameter.describe().description,
-        required: flags.presence === 'required',
+        required: source === HTTP_PARAMETERS.PATH || flags.presence === 'required',
       };
 
       const type = joiParameter.describe().type;
