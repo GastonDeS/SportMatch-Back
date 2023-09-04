@@ -138,10 +138,5 @@ export const createDBTables = async (): Promise<void>  => {
 
     await pool.query(`INSERT INTO ratings (rated, rater, rating, event_id) VALUES
         (3, 1, 5, 4);`);
-
-    await pool.query(`INSERT INTO ratings(rated, rater, rating, event_id) 
-        SELECT 1, 3, 4, 4
-        FROM events
-        WHERE id = 4 AND CURRENT_TIMESTAMP > schedule;`);
 }
 

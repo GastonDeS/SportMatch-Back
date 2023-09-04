@@ -1,4 +1,5 @@
 import pool from "../database/postgres.database";
+import GenericException from "../exceptions/generic.exception";
 
 
 class UsersService {
@@ -38,11 +39,34 @@ class UsersService {
     }
 
     public async rateUser(rated: string, rater: string, rating: number, eventId: string): Promise<any> {
-        await pool.query(`INSERT INTO ratings(rated, rater, rating, event_id) 
-        SELECT ${rated}, ${rater}, ${rating}, ${eventId}
-        FROM events
-        WHERE id = ${eventId} AND CURRENT_TIMESTAMP > schedule;`, [rated, rater, rating, eventId]);
-    }
+        const query = `
+          WITH selected_event AS (
+            SELECT id
+            FROM events
+            WHERE id = $1 AND CURRENT_TIMESTAMP > schedule
+          )
+          INSERT INTO ratings(rated, rater, rating, event_id)
+          SELECT $2, $3, $4, se.id
+          FROM selected_event se;
+        `;
+      
+        const values = [eventId, rated, rater, rating];
+      
+        try {
+            const res = await pool.query(query, values);
+            if (res.rowCount === 0) throw new GenericException(
+                { 
+                    message: "event doesn't exists, events is not rateable or the user wasn't a participant", 
+                    status: 404, 
+                    internalStatus: "NOT_FOUND"
+                })
+        } catch (err) {
+            if (err.constraint === "unique_rating")
+                throw new GenericException({ message: "The user was already rated by the rater", status: 409, internalStatus: "CONFLICT"});
+            if (err instanceof GenericException) throw err;
+        }
+      }
+      
 
     public async createUser(email: string, firstname: string, lastname: string, phone_number: string): Promise<any> {
         const users = await pool.query(`INSERT INTO users(email, firstname, lastname, phone_number) VALUES($1, $2, $3, $4) RETURNING *;`, [email, firstname, lastname, phone_number]);
