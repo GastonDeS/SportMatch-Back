@@ -34,7 +34,7 @@ const validationHelper = (schema: Joi.ObjectSchema, source: HTTP_PARAMETERS) => 
             .addOperationId(propertyKey).parameters(translateJoiToSwagger(schema, source)).build();
         const originalMethod = descriptor.value;
         descriptor.value = function async (req: Request, res: Response, next: NextFunction) {
-            const { error } = schema.validate(req[source]);
+            const { error } = schema.validate(req[(source === HTTP_PARAMETERS.PATH)? "params": source]);
             if (error) {
                 next(new GenericException({ 
                     message: error.details.map((e: any) => e.message.replace(/"/g, '')).join(', '),

@@ -56,6 +56,18 @@ export class SwaggerEndpointBuilder {
         $ref: "#/components/schemas/IErrorData",
       },
     };
+
+    const body = this.endpoint.parameters?.find((p) => p.in === "body");
+    if (body) {
+      this.endpoint.parameters = this.endpoint.parameters?.filter((p) => p.in !== "body");
+      this.endpoint.requestBody = {
+        content: {
+          "application/json": {
+            schema: body.schema
+          }
+        }
+      }
+    }
     return this.endpoint;
   }
 }

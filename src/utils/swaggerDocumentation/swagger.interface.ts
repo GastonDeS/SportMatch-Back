@@ -6,6 +6,7 @@ export interface SwaggerEndpoint {
     description?: string;
     tags?: string[];
     parameters?: SwaggerParameter[];
+    requestBody?: any;
     responses?: { [statusCode: string]: SwaggerResponse };
   }
   
@@ -16,6 +17,7 @@ export interface SwaggerParameter {
     required: boolean;
     type: string;
     format?: string;
+    schema?: {[key: string]: any}
     // Add any other properties specific to parameters
 }
 
