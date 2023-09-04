@@ -1,3 +1,4 @@
+import { HTTP_PARAMETERS } from "../../constants/http.constants";
 import { SwaggerParameter } from "./swagger.interface";
 
 export class SwaggerParameterBuilder {
@@ -15,7 +16,7 @@ export class SwaggerParameterBuilder {
   }
 
   // Set the location of the parameter (e.g., 'query', 'path', 'header', 'cookie')
-  location(inLocation: 'query' | 'path' | 'header' | 'cookie' | 'body') {
+  location(inLocation: HTTP_PARAMETERS) {
     this.parameter.in = inLocation;
     return this;
   }
