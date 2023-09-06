@@ -24,13 +24,7 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
       const type = joiParameter.describe().type;
 
       // Map Joi types to Swagger types
-      if (type === 'string') {
-        bodySchema.properties[key] = { type: 'string' };
-      } else if (type === 'number') {
-        bodySchema.properties[key] = { type: 'number' };
-      } else if (type === 'boolean') {
-        bodySchema.properties[key] = { type: 'boolean' };
-      } // Add more type mappings as needed
+      bodySchema.properties[key] = convertTypes(type);
 
       const valids = joiParameter.describe().valids;
       // Translate constraints (e.g., min, max) to Swagger attributes (e.g., minimum, maximum)
@@ -41,17 +35,8 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
         bodySchema.properties[key].nullable = true;
       }
 
-      const tests = joiParameter.describe().tests;
-      if (tests) {
-        tests.forEach((test: any) => {
-          if (test.name === 'min') {
-            bodySchema.properties[key].minimum = test.args.limit;
-          }
-          if (test.name === 'max') {
-            bodySchema.properties[key].maximum = test.args.limit;
-          }
-        });
-      }
+      const rules = joiParameter.describe().rules;
+      addRules(rules, bodySchema.properties[key]);
 
       if (flags.presence === 'required') {
         bodySchema.required.push(key);
@@ -79,13 +64,7 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
       const type = joiParameter.describe().type;
 
       // Map Joi types to Swagger types
-      if (type === 'string') {
-        swaggerParameter.type = 'string';
-      } else if (type === 'number') {
-        swaggerParameter.type = 'number';
-      } else if (type === 'boolean') {
-        swaggerParameter.type = 'boolean';
-      } // Add more type mappings as needed
+      swaggerParameter.type = convertTypes(type);
 
       const valids = joiParameter.describe().valids;
       // Translate constraints (e.g., min, max) to Swagger attributes (e.g., minimum, maximum)
@@ -96,21 +75,37 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
         swaggerParameter.nullable = true;
       }
 
-      const tests = joiParameter.describe().tests;
-      if (tests) {
-        tests.forEach((test: any) => {
-          if (test.name === 'min') {
-            swaggerParameter.minimum = test.args.limit;
-          }
-          if (test.name === 'max') {
-            swaggerParameter.maximum = test.args.limit;
-          }
-        });
-      }
+      const rules = joiParameter.describe().rules;
+      addRules(rules, swaggerParameter);
 
       swaggerParameters.push(swaggerParameter);
     });
   }
 
   return swaggerParameters;
+
+  function convertTypes(type: string | undefined) {
+    if (type === 'string') {
+      return { type: 'string' };
+    } else if (type === 'number') {
+      return { type: 'number' };
+    } else if (type === 'boolean') {
+      return { type: 'boolean' };
+    } else if (type === 'date') {
+      return { type: 'string', format: "date-time" };
+    }
+  }
+
+  function addRules(rules: any[], swaggerParameter: any) {
+    if (rules) {
+      rules.forEach((rule: any) => {
+        if (rule.name === 'min') {
+          swaggerParameter.minimum = rule.args.limit;
+        }
+        if (rule.name === 'max') {
+          swaggerParameter.maximum = rule.args.limit;
+        }
+      });
+    }
+  }
 }

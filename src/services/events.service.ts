@@ -168,6 +168,7 @@ class EventsService {
         VALUES(${owner_id}, ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${remaining}) RETURNING id;`;
 
         const res = await pool.query(query);
+        console.log(res);
         return res.rows[0].id;
     }
 }

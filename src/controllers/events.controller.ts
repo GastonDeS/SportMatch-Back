@@ -38,9 +38,9 @@ class EventsController {
         })
     .build())
     @validateQuery(Joi.object({
-        participantId: Joi.string().optional(),
-        sportId: Joi.string().optional(),
-        userId: Joi.string().optional(),
+        participantId: Joi.number().min(1).optional(),
+        sportId: Joi.number().min(1).optional(),
+        userId: Joi.number().min(1).optional(),
         filterOut: Joi.boolean().optional(),
         location: Joi.string().optional(),
         expertise: Joi.string().optional(),
@@ -70,7 +70,7 @@ class EventsController {
         })
     .build())
     @validateParams(Joi.object({
-        eventId: Joi.number().required()
+        eventId: Joi.number().min(1).required()
     }))
     @HttpRequestInfo("/events/{eventId}", HTTP_METHODS.GET)
     public async getEventById(req: Request, res: Response, next: NextFunction) {
@@ -96,8 +96,8 @@ class EventsController {
         })
     .build())
     @validateBody(Joi.object({
-        owner_id: Joi.number().required(),
-        sport_id: Joi.number().required(),
+        owner_id: Joi.number().min(1).required(),
+        sport_id: Joi.number().min(1).required(),
         expertise: Joi.string().required(),
         schedule: Joi.date().required(),
         location: Joi.string().required(),
@@ -109,6 +109,7 @@ class EventsController {
         const { owner_id, sport_id, expertise, description, schedule, location, remaining } = req.body;
 
         try {
+            console.log("check", req.body);
             const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, location, schedule, description, remaining);
             res.status(HTTP_STATUS.CREATED).send({eventId: event});
         } catch (err) {
@@ -127,10 +128,10 @@ class EventsController {
         })
     .build())
     @validateParams(Joi.object({
-        eventId: Joi.number().required()
+        eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        userId: Joi.number().required()
+        userId: Joi.number().min(1).required()
     }))
     @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.PUT)
     public async addParticipant(req: Request, res: Response, next: NextFunction) {
@@ -156,10 +157,10 @@ class EventsController {
         })
     .build())
     @validateParams(Joi.object({
-        eventId: Joi.number().required()
+        eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        userId: Joi.number().required()
+        userId: Joi.number().min(1).required()
     }))
     @HttpRequestInfo("/events/:eventId/participants", "delete")
     public async removeParticipant(req: Request, res: Response, next: NextFunction) {
@@ -187,10 +188,10 @@ class EventsController {
         })
     .build())
     @validateParams(Joi.object({
-        eventId: Joi.number().required()
+        eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        userId: Joi.number().required()
+        userId: Joi.number().min(1).required()
     }))
     @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.PUT)
     public async acceptParticipant(req: Request, res: Response, next: NextFunction) {
@@ -216,7 +217,7 @@ class EventsController {
         })
     .build())
     @validateParams(Joi.object({
-        eventId: Joi.number().required()
+        eventId: Joi.number().min(1).required()
     }))
     @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.GET)
     public async getParticipants(req: Request, res: Response, next: NextFunction) {

@@ -54,10 +54,10 @@ class UsersController {
     @validateBody(Joi.object({
         rater: Joi.string().required(),
         rating: Joi.number().min(1).max(5).required(),
-        eventId: Joi.number().required()
+        eventId: Joi.number().min(1).required()
     }))
     @validateParams(Joi.object({
-        userId: Joi.string().required()
+        userId: Joi.number().min(1).required()
     }))
     @HttpRequestInfo("/users/:userId/rate", HTTP_METHODS.POST)
     public async rateUser(req: Request, res: Response, next: NextFunction) {
@@ -108,7 +108,7 @@ class UsersController {
         .build()
     )
     @validateParams(Joi.object({
-        userId: Joi.string().required()
+        userId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
         phone_number: Joi.string().optional(),
