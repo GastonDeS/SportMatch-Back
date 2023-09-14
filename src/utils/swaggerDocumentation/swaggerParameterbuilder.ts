@@ -8,7 +8,7 @@ export class SwaggerParameterBuilder {
   static create(name: string) {
     const parameter: SwaggerParameter = {
       name,
-      in: "query", // Default to 'query'
+      in: HTTP_PARAMETERS.QUERY, // Default to 'query'
       required: false, // Default to false
       type: 'string', // Default to 'string'
     };
