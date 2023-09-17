@@ -24,6 +24,9 @@ To run the SportsMatch application, follow these steps:
 - `DB_PASS`: The password for the database user. (e.g., DB_PASS=password)
 - `DB_PORT`: The port number on which the database server is running. (e.g., DB_PORT=5432)
 - `LAN_HOST`: The local network host address for the application. (e.g., LAN_HOST=192.168.xx.xx)
+- `NAME`: The name of the application. (e.g., NAME=SportsMatch)
+- `PORT`: The port number on which the application will run. (e.g., PORT=8080)
+- `IS_LOCAL`: A boolean value that indicates whether the application is running locally. (e.g., IS_LOCAL=true)
 
 ## Environment Variable Explanations
 
@@ -46,6 +49,18 @@ To run the SportsMatch application, follow these steps:
 `npm run dev`
 
 2. Access the application using the URL provided in the console.
+
+## Deploy
+
+To deploy the SportsMatch application, follow these steps:
+
+1. run the following command to create the image:
+
+`docker build . -t sportmatch_img`
+
+2. run the following command to create the container:
+
+`docker run -p 8080:8080 -t sportmatch_img`
 
 ## Credits
 
