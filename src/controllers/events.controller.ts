@@ -102,15 +102,16 @@ class EventsController {
         schedule: Joi.date().required(),
         location: Joi.string().required(),
         remaining: Joi.number().required(),
+        duration: Joi.number().required(), // minutes
         description: Joi.string().optional()
     }))
     @HttpRequestInfo("/events", HTTP_METHODS.POST)
     public async createEvent(req: Request, res: Response, next: NextFunction) {
-        const { owner_id, sport_id, expertise, description, schedule, location, remaining } = req.body;
+        const { owner_id, sport_id, expertise, description, schedule, duration, location, remaining } = req.body;
 
         try {
             console.log("check", req.body);
-            const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, location, schedule, description, remaining);
+            const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, location, schedule, description, duration, remaining);
             res.status(HTTP_STATUS.CREATED).send({eventId: event});
         } catch (err) {
             next(err);

@@ -41,13 +41,17 @@ class EventsService {
                             users.lastname as lastname,
                             participants.status as participant_status,
                             users.phone_number as phone_number,
-                            avg(rating)::float as rating,
-                            count(rating)::integer as count
+                            COALESCE(avg(rating)::float, 0) as rating,
+                            COALESCE(count(rating)::integer, 0) as count,
+                            COALESCE(rated_aux.isRated, 0) as is_rated
                         FROM participants 
                             left outer join users on participants.user_id = users.id
                             left outer join ratings on participants.user_id = ratings.rated
+                            left outer join (
+                                select max(1) as isRated, rated from ratings where event_id = ${eventId} group by rated
+                            ) as rated_aux on rated_aux.rated = participants.user_id
                         WHERE participants.event_id = ${eventId}
-                        GROUP BY participants.user_id, users.firstname, users.lastname, participants.status, users.phone_number`;
+                        GROUP BY participants.user_id, users.firstname, users.lastname, participants.status, users.phone_number, rated_aux.isRated`;
         const res = await pool.query(query);
         return res.rows;
     }
@@ -90,11 +94,17 @@ class EventsService {
             events.location,
             events.expertise,
             events.sport_id,
-            events.remaining - COUNT(participants.id) AS remaining,
+            (events.remaining - COUNT(participants.id))::integer AS remaining,
             users.firstname AS owner_firstname,
             ${participantIdFilter ? "participants.status as participant_status," : ""}
-            rate.rating::float,
-            rate.count::integer
+            ${participantIdFilter ? "COALESCE(rated_aux.isRated, 0) as is_rated," : ""}
+            COALESCE(rate.rating::float, 0) as rating,
+            COALESCE(rate.count::integer, 0) as rate_count,
+            CASE
+                WHEN events.schedule > CURRENT_TIMESTAMP THEN 0
+                WHEN events.schedule <= CURRENT_TIMESTAMP AND events.schedule + (events.duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
+                ELSE 2
+            END AS event_status
             FROM
                 events
             JOIN
@@ -103,7 +113,11 @@ class EventsService {
                 participants ON events.id = participants.event_id
             LEFT JOIN (
                 SELECT rated, avg(rating) as rating, count(rating) as count FROM ratings GROUP BY rated
-            ) as rate ON events.owner_id = rate.rated\n`);
+            ) as rate ON events.owner_id = rate.rated
+            ${participantIdFilter ? `LEFT JOIN (
+                SELECT max(1) as isRated, event_id from ratings where rater = ${queryFilters.participantId} group by event_id
+            ) as rated_aux ON rated_aux.event_id = events.id` :
+                ""}\n`);
 
         if (queryFilters !== undefined) {
             const sportId = queryFilters.sportId?.toString().trim();
@@ -127,12 +141,14 @@ class EventsService {
             const schedule = queryFilters.schedule?.toString().trim();
             if (schedule !== undefined) queryBuilder.addFilter(this.getTimeEventFilter(schedule));
 
-            queryBuilder.addFilter(`events.schedule >= CURRENT_TIMESTAMP`);
+            if (userId === undefined && participantId === undefined)
+                queryBuilder.addFilter(`events.schedule >= CURRENT_TIMESTAMP`);
         }
 
         queryBuilder.addGroupBy(`events.id, users.firstname`);
         if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
         queryBuilder.addGroupBy(`rate.rating, rate.count`);
+        queryBuilder.addGroupBy(`rated_aux.isRated`);
         queryBuilder.addOrderBy(`events.schedule ASC `);
         queryBuilder.addPagination(page, limit);
 
@@ -162,10 +178,11 @@ class EventsService {
         location: string,
         schedule: string,
         description: string,
+        duration: number,
         remaining: number
     ) {
-        const query = `INSERT INTO events(owner_id, sport_id, expertise, location, schedule, description, remaining)
-        VALUES(${owner_id}, ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${remaining}) RETURNING id;`;
+        const query = `INSERT INTO events(owner_id, sport_id, expertise, location, schedule, description, duration, remaining)
+        VALUES(${owner_id}, ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${duration}, ${remaining}) RETURNING id;`;
 
         const res = await pool.query(query);
         console.log(res);
