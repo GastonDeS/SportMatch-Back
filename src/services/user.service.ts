@@ -43,7 +43,7 @@ class UsersService {
           WITH selected_event AS (
             SELECT id
             FROM events
-            WHERE id = $1 AND CURRENT_TIMESTAMP > schedule
+            WHERE id = $1 AND events.schedule + (events.duration * INTERVAL '1 minute') < CURRENT_TIMESTAMP
           )
           INSERT INTO ratings(rated, rater, rating, event_id)
           SELECT $2, $3, $4, se.id
