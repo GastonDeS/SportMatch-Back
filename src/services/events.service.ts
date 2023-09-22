@@ -148,7 +148,8 @@ class EventsService {
         queryBuilder.addGroupBy(`events.id, users.firstname`);
         if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
         queryBuilder.addGroupBy(`rate.rating, rate.count`);
-        queryBuilder.addGroupBy(`rated_aux.isRated`);
+        if (participantIdFilter)
+            queryBuilder.addGroupBy(`rated_aux.isRated`);
         queryBuilder.addOrderBy(`events.schedule ASC `);
         queryBuilder.addPagination(page, limit);
 
