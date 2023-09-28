@@ -46,8 +46,8 @@ class UsersService {
             WHERE id = $1 AND events.schedule + (events.duration * INTERVAL '1 minute') < CURRENT_TIMESTAMP
           )
           INSERT INTO ratings(rated, rater, rating, event_id)
-          SELECT $2, $3, $4, se.id
-          FROM selected_event se;
+          SELECT $2, (SELECT id from users where email = $3), $4, se.id
+          FROM selected_event se returning id;
         `;
       
         const values = [eventId, rated, rater, rating];
@@ -64,6 +64,7 @@ class UsersService {
             if (err.constraint === "unique_rating")
                 throw new GenericException({ message: "The user was already rated by the rater", status: 409, internalStatus: "CONFLICT"});
             if (err instanceof GenericException) throw err;
+            throw new GenericException({ message: "Internal server error", status: 500, internalStatus: "INTERNAL_SERVER_ERROR"});
         }
       }
       
@@ -73,26 +74,57 @@ class UsersService {
         return users.rows[0];
     }
 
-    public async updateUser(userId: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<any> {
-        if (phone_number) await this.updatePhoneNumber(userId, phone_number);
-        if (locations) await this.updateLocations(userId, locations);
-        if (sports) await this.updateSports(userId, sports);
+    public async updateUser(userId: string, email: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<any> {
+        if (phone_number) await this.updatePhoneNumber(userId, email, phone_number);
+        if (locations) await this.updateLocations(userId, email, locations);
+        if (sports) await this.updateSports(userId, email, sports);
     }
 
-    private async updatePhoneNumber(userId: string, phone_number: string): Promise<any> {
-        await pool.query(`UPDATE users SET phone_number = $1 WHERE id = $2;`, [phone_number, userId]);
+    private async updatePhoneNumber(userId: string, email: string, phone_number: string): Promise<any> {
+        const res = await pool.query(`UPDATE users SET phone_number = $1 WHERE id = $2 AND email = $3 returning id;`, [phone_number, userId, email]);
+        if (res.rowCount === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
     }
 
-    private async updateLocations(userId: string, locations: string[]): Promise<any> {
-        const query = `INSERT INTO users_locations (user_id, location_id) VALUES ($1, $2) ON CONFLICT (user_id, location_id) DO NOTHING;`;
-        const promises = locations.map(async (locationId: string) => await pool.query(query, [userId, locationId]));
-        await Promise.all(promises);
+    private async updateLocations(userId: string, email: string, locations: string[]): Promise<any> {
+        const res = await pool.query(`SELECT count(*) FROM users WHERE id = $1 AND email = $2;`, [userId, email]);
+        if (res.rows[0].count === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
+        await pool.query(`DELETE FROM users_locations WHERE user_id = $1;`, [userId]);
+        
+        const query = this.createLocationQuery(locations);
+        await pool.query(query, [userId]);
     }
 
-    private async updateSports(userId: string, sports: string[]): Promise<void> {
-        const query = `INSERT INTO users_sports (user_id, sport_id) VALUES ($1, $2) ON CONFLICT (user_id, sport_id) DO NOTHING;`;
-        const promises = sports.map(async (sportId: string) => await pool.query(query, [userId, sportId]));
-        await Promise.all(promises);
+    private createLocationQuery(locations: string[]): string {
+        let query = `
+        INSERT INTO users_locations (user_id, location) values 
+        `
+        locations.forEach((location: string, index) => {
+            query = query.concat(`($1, '${location}') `);
+            if (locations.length > 1 && index < locations.length - 1) query = query.concat(", ");
+        }
+        );
+        return query.concat("ON CONFLICT (user_id, location) DO NOTHING;");
+    }
+
+    private async updateSports(userId: string, email: string, sports: string[]): Promise<void> {
+        const res = await pool.query(`SELECT count(*) FROM users WHERE id = $1 AND email = $2;`, [userId, email]);
+        if (res.rows[0].count === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
+        await pool.query(`
+            DELETE FROM users_sports WHERE user_id = (SELECT id from users where email = $2 AND id = $1);`, [userId, email]);
+        const query = this.createSportsQuery(sports);
+        await pool.query(query, [userId]);
+    }
+
+    private createSportsQuery(sports: string[]): string {
+        let query = `
+        INSERT INTO users_sports (user_id, sport_id) values 
+        `
+        sports.forEach((sportId: string, index) => {
+            query = query.concat(`($1, ${sportId}) `);
+            if (sports.length > 1 && index < sports.length - 1) query = query.concat(", ");
+        }
+        );
+        return query.concat("ON CONFLICT (user_id, sport_id) DO NOTHING;");
     }
 }
 

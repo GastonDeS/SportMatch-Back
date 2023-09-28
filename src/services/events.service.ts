@@ -1,5 +1,6 @@
 import { TIME_OF_DAY } from "../constants/events.constants";
 import pool, { QueryBuilder } from "../database/postgres.database";
+import GenericException from "../exceptions/generic.exception";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -12,26 +13,31 @@ class EventsService {
         return this.instance;
     }
 
-    public async addParticipant(eventId: number, userId: number): Promise<void> {
+    public async addParticipant(eventId: number, email: string): Promise<void> {
         const query = `INSERT INTO participants(event_id, user_id, status)
-        VALUES(${eventId}, ${userId}, false)`;
+        VALUES(${eventId}, (select id from users where email = '${email}'), false)`;
 
         await pool.query(query);
     }
 
-    public async removeParticipant(eventId: number, userId: number): Promise<void> {
+    public async removeParticipant(eventId: number, email: string, ownerEmail?: string): Promise<void> {
         const query = `DELETE FROM participants
-        WHERE event_id = ${eventId} AND user_id = ${userId}`;
+        WHERE event_id = ${eventId} AND user_id = (select id from users where email = '${email}') ${ownerEmail ? ` AND event_id IN (select id from events where owner_id in (select id from users where email = '${ownerEmail}'))`: ""}`;
 
-        await pool.query(query);
+
+        console.log(query);
+        const res = await pool.query(query)
+        console.log(res);
+        if (res.rowCount === 0) throw new GenericException({ message: "Participant not found", status: 404, internalStatus: "PARTICIPANT_NF" });
     }
 
-    public async acceptParticipant(eventId: number, userId: number): Promise<void> {
+    public async acceptParticipant(eventId: number, email: string, ownerEmail: string): Promise<void> {
         const query = `UPDATE participants
         SET status = true
-        WHERE event_id = ${eventId} AND user_id = ${userId}`;
+        WHERE event_id = ${eventId} AND user_id = (select id from users where email = '${email}') AND event_id IN (select id from events where owner_id in (select id from users where email = '${ownerEmail}'))`;
 
-        await pool.query(query);
+        const res = await pool.query(query);
+        if (res.rowCount === 0) throw new GenericException({ message: "Participant not found", status: 404, internalStatus: "PARTICIPANT_NF" });
     }
 
     public async getParticipants(eventId: number): Promise<any> {

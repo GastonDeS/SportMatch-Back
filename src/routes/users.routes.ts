@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { urlencoded } from 'body-parser';
 import cors from 'cors';
 import UsersController from '../controllers/users.controller';
+import cognitoUserMiddleware from '../middlewares/cognitoUser.middleware';
 
 export default class UsersRoutes {
     public router: Router = Router({ mergeParams: true });
@@ -17,8 +18,8 @@ export default class UsersRoutes {
         this.router.use(cors());
 
         this.router.get('/', this.controller.getUsers);
-        this.router.post('/', this.controller.createUser);
-        this.router.post('/:userId/rate', this.controller.rateUser);
-        this.router.put('/:userId', this.controller.updateUser);
+        this.router.post('/', cognitoUserMiddleware, this.controller.createUser);
+        this.router.post('/:userId/rate', cognitoUserMiddleware, this.controller.rateUser);
+        this.router.put('/:userId', cognitoUserMiddleware, this.controller.updateUser);
     }
 }

@@ -131,15 +131,12 @@ class EventsController {
     @validateParams(Joi.object({
         eventId: Joi.number().min(1).required()
     }))
-    @validateBody(Joi.object({
-        userId: Joi.number().min(1).required()
-    }))
     @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.PUT)
     public async addParticipant(req: Request, res: Response, next: NextFunction) {
-        const userId = req.body.userId; // TODO get this from validator
+        const email = req.user.email;
         const eventId = parseInt(req.params.eventId);
         try {
-            await this.eventsService.addParticipant(eventId, userId);
+            await this.eventsService.addParticipant(eventId, email);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -159,25 +156,19 @@ class EventsController {
     .build())
     @validateParams(Joi.object({
         eventId: Joi.number().min(1).required()
-    }))
-    @validateBody(Joi.object({
-        userId: Joi.number().min(1).required()
     }))
     @HttpRequestInfo("/events/:eventId/participants", "delete")
     public async removeParticipant(req: Request, res: Response, next: NextFunction) {
-        const userId = req.body.userId; // TODO get this from validator
+        const email = req.user.email;
         const eventId = parseInt(req.params.eventId);
         try {
-            await this.eventsService.removeParticipant(eventId, userId);
+            await this.eventsService.removeParticipant(eventId, email);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
         }
     }
 
-    /**
-     * TODO: this route need owner validation
-     */
     @document(SwaggerEndpointBuilder.create()
         .responses({
             "200": {
@@ -192,15 +183,45 @@ class EventsController {
         eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        userId: Joi.number().min(1).required()
+        email: Joi.string().email().required(),
+    }))
+    @HttpRequestInfo("/events//:eventId/owner/participants", "delete")
+    public async ownerRemoveParticipant(req: Request, res: Response, next: NextFunction) {
+        const email = req.body.email;
+        const owner = req.user.email;
+        const eventId = parseInt(req.params.eventId);
+        try {
+            await this.eventsService.removeParticipant(eventId, email, owner);
+            res.status(HTTP_STATUS.OK).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                }
+            }
+        })
+    .build())
+    @validateParams(Joi.object({
+        eventId: Joi.number().min(1).required()
+    }))
+    @validateBody(Joi.object({
+        email: Joi.string().email().required(),
     }))
     @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.PUT)
     public async acceptParticipant(req: Request, res: Response, next: NextFunction) {
-        const userId = req.body.userId;
+        const email = req.body.email;
+        const ownerEmail = req.user.email;
         const eventId = parseInt(req.params.eventId);
 
         try {
-            await this.eventsService.acceptParticipant(eventId, userId);
+            await this.eventsService.acceptParticipant(eventId, email, ownerEmail);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);

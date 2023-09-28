@@ -61,7 +61,8 @@ class UsersController {
     }))
     @HttpRequestInfo("/users/:userId/rate", HTTP_METHODS.POST)
     public async rateUser(req: Request, res: Response, next: NextFunction) {
-        const { rater, rating, eventId } = req.body;
+        const { rating, eventId } = req.body;
+        const rater = req.user.email;
         const rated = req.params.userId;
 
         try {
@@ -80,18 +81,12 @@ class UsersController {
         })
         .build()
     )
-    @validateBody(Joi.object({
-        email: Joi.string().email().required(),
-        firstname: Joi.string().required(),
-        lastname: Joi.string().required(),
-        phone_number: Joi.string().required()
-    }))
     @HttpRequestInfo("/users", HTTP_METHODS.POST)
     public async createUser(req: Request, res: Response, next: NextFunction) {
-        const { email, firstname, lastname, phone_number } = req.body;
+        const { email, firstName, lastName, phoneNumber } = req.user;
 
         try {
-            const user = await this.usersService.createUser(email, firstname, lastname, phone_number);
+            const user = await this.usersService.createUser(email, firstName, lastName, phoneNumber);
             res.status(HTTP_STATUS.OK).send(user);
         } catch (err) {
             next(err);
@@ -113,15 +108,16 @@ class UsersController {
     @validateBody(Joi.object({
         phone_number: Joi.string().optional(),
         locations: Joi.array().items(Joi.string()).optional(),
-        sports: Joi.array().items(Joi.string()).optional()
+        sports: Joi.array().items(Joi.number()).optional()
     }))
     @HttpRequestInfo("/users/:userId", HTTP_METHODS.PUT)
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const userId = req.params.userId;
         const { phone_number, locations, sports } = req.body;
+        const email = req.user.email;
 
         try {
-            const user = await this.usersService.updateUser(userId, phone_number, locations, sports);
+            const user = await this.usersService.updateUser(userId, email, phone_number, locations, sports);
             res.status(HTTP_STATUS.OK).send(user);
         } catch (err) {
             next(err);

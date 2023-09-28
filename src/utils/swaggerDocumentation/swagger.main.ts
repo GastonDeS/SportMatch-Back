@@ -49,7 +49,7 @@ const swaggerAPI = {
   },
 };
 
-console.log(JSON.stringify(swaggerAPI));
+// console.log(JSON.stringify(swaggerAPI));
 
 function initializeSwagger(app: Application) {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerAPI));

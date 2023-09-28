@@ -108,7 +108,7 @@ export const createDBTables = async (): Promise<void>  => {
     );
 
     await pool.query(`INSERT INTO users (firstname, lastname, phone_number, email) VALUES
-        ('John', 'Doe', '2235910122', 'caberna@gmail.com'),
+        ('John', 'Doe', '2235910122', 'xosedaw912@alvisani.com'),
         ('Jane', 'Doe', '2235910125', 'janeDoe@gmail.com'),
 	('Marcos', 'Doe','1121576282', 'marcos@gmail.com') ON CONFLICT (email) DO NOTHING;`);
 
