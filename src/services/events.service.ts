@@ -187,7 +187,7 @@ class EventsService {
         remaining: number
     ) {
         const query = `INSERT INTO events(owner_id, sport_id, expertise, location, schedule, description, duration, remaining)
-        VALUES((SELECT id from users where email = ${ownerEmail}), ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${duration}, ${remaining}) RETURNING id;`;
+        VALUES((SELECT id from users where email = '${ownerEmail}'), ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${duration}, ${remaining}) RETURNING id;`;
 
         const res = await pool.query(query);
         return res.rows[0].id;
