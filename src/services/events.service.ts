@@ -42,6 +42,7 @@ class EventsService {
                             participants.user_id,
                             users.firstname as firstname,
                             users.lastname as lastname,
+                            users.email as email,
                             participants.status as participant_status,
                             users.phone_number as phone_number,
                             COALESCE(avg(rating)::float, 0) as rating,
@@ -54,7 +55,7 @@ class EventsService {
                                 select max(1) as isRated, rated from ratings where event_id = ${eventId} group by rated
                             ) as rated_aux on rated_aux.rated = participants.user_id
                         WHERE participants.event_id = ${eventId}
-                        GROUP BY participants.user_id, users.firstname, users.lastname, participants.status, users.phone_number, rated_aux.isRated`;
+                        GROUP BY participants.user_id, users.firstname, users.lastname, users.email, participants.status, users.phone_number, rated_aux.isRated`;
         const res = await pool.query(query);
         return res.rows;
     }
