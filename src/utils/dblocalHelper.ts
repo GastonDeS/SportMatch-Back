@@ -2,15 +2,16 @@ import pool from "../database/postgres.database";
 
 // this is a helper for running on local
 export const createDBTables = async (): Promise<void>  => {
-    if (process.env.IS_LOCAL) {
-        await pool.query(`DROP TABLE IF EXISTS participants;`);
-        await pool.query(`DROP TABLE IF EXISTS ratings;`);
-        await pool.query(`DROP TABLE IF EXISTS users_sports;`);
-        await pool.query(`DROP TABLE IF EXISTS users_locations;`);
-        await pool.query(`DROP TABLE IF EXISTS events;`);
-        await pool.query(`DROP TABLE IF EXISTS sports;`);
-        await pool.query(`DROP TABLE IF EXISTS users;`);
-    }
+    // if (process.env.IS_LOCAL) {
+    //     console.log("erasing shit");
+    //     await pool.query(`DROP TABLE IF EXISTS participants;`);
+    //     await pool.query(`DROP TABLE IF EXISTS ratings;`);
+    //     await pool.query(`DROP TABLE IF EXISTS users_sports;`);
+    //     await pool.query(`DROP TABLE IF EXISTS users_locations;`);
+    //     await pool.query(`DROP TABLE IF EXISTS events;`);
+    //     await pool.query(`DROP TABLE IF EXISTS sports;`);
+    //     await pool.query(`DROP TABLE IF EXISTS users;`);
+    // }
 
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id serial PRIMARY KEY,
@@ -109,39 +110,40 @@ export const createDBTables = async (): Promise<void>  => {
         CONSTRAINT check_rating CHECK(rating >= 1 AND rating <= 5) );`
     );
 
-    if (!process.env.IS_LOCAL) return;
-    await pool.query(`INSERT INTO users (firstname, lastname, phone_number, email) VALUES
-        ('John', 'Doe', '2235910122', 'xosedaw912@alvisani.com'),
-        ('Jane', 'Doe', '2235910125', 'janeDoe@gmail.com'),
-	('Marcos', 'Doe','1121576282', 'marcos@gmail.com') ON CONFLICT (email) DO NOTHING;`);
+    // if (!process.env.IS_LOCAL) return;
+    // console.log("erasing shit");
+    // await pool.query(`INSERT INTO users (firstname, lastname, phone_number, email) VALUES
+    //     ('John', 'Doe', '2235910122', 'xosedaw912@alvisani.com'),
+    //     ('Jane', 'Doe', '2235910125', 'janeDoe@gmail.com'),
+	// ('Marcos', 'Doe','1121576282', 'marcos@gmail.com') ON CONFLICT (email) DO NOTHING;`);
 
-    await pool.query(`INSERT INTO users_sports (user_id, sport_id) VALUES
-        (1, 1),
-        (1, 2),
-	(1, 3);`);
+    // await pool.query(`INSERT INTO users_sports (user_id, sport_id) VALUES
+    //     (1, 1),
+    //     (1, 2),
+	// (1, 3);`);
 
-    await pool.query(`INSERT INTO users_locations (user_id, location) VALUES
-        (1, 'Agronomía'),
-        (1, 'Almagro'),
-	(1, 'Belgrano');`);
+    // await pool.query(`INSERT INTO users_locations (user_id, location) VALUES
+    //     (1, 'Agronomía'),
+    //     (1, 'Almagro'),
+	// (1, 'Belgrano');`);
 
-    await pool.query(`INSERT INTO events (owner_id, description, sport_id, schedule, location, expertise, remaining, duration) VALUES
-        (1, 'Football match', 1, '2023-10-01 20:00:00', 'Almagro', 1, 1, 90),
-        (2, 'Football match', 1, '2023-10-01 10:00:00', 'Caballito', 1, 1, 60),
-        (2, 'Basket match', 2, '2023-09-19 23:00:00', 'Chacarita', 1, 1, 800),
-	    (3, 'Nuevo partido', 3, '2022-09-04 11:00:00', 'Agronomía', 2, 3, 120);`);
+    // await pool.query(`INSERT INTO events (owner_id, description, sport_id, schedule, location, expertise, remaining, duration) VALUES
+    //     (1, 'Football match', 1, '2023-10-01 20:00:00', 'Almagro', 1, 1, 90),
+    //     (2, 'Football match', 1, '2023-10-01 10:00:00', 'Caballito', 1, 1, 60),
+    //     (2, 'Basket match', 2, '2023-09-19 23:00:00', 'Chacarita', 1, 1, 800),
+	//     (3, 'Nuevo partido', 3, '2022-09-04 11:00:00', 'Agronomía', 2, 3, 120);`);
 
-    await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (2, 1, true);`);
-    await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (3, 1, false);`);
-    await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (1, 2, false);`);
-    await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
-        (4, 1, false);`);
+    // await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
+    //     (2, 1, true);`);
+    // await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
+    //     (3, 1, false);`);
+    // await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
+    //     (1, 2, false);`);
+    // await pool.query(`INSERT INTO participants (event_id, user_id, status) VALUES
+    //     (4, 1, false);`);
 
-    await pool.query(`INSERT INTO ratings (rated, rater, rating, event_id) VALUES
-        (3, 1, 5, 4),
-        (1, 3, 5, 4);`);
+    // await pool.query(`INSERT INTO ratings (rated, rater, rating, event_id) VALUES
+    //     (3, 1, 5, 4),
+    //     (1, 3, 5, 4);`);
 }
 
