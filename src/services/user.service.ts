@@ -21,19 +21,26 @@ class UsersService {
 
     public async getUserByEmail(email: string): Promise<any> {
         const user = await pool.query(`
-                SELECT
-                    u.id AS user_id,
-                    u.firstname,
-                    u.lastname,
-                    u.phone_number,
-                    u.email,
-                    ARRAY_AGG(DISTINCT (us.sport_id)) AS sports,
-                    ARRAY_AGG(DISTINCT ul.location) AS locations
-                FROM users u
-                LEFT JOIN users_sports us ON u.id = us.user_id
-                LEFT JOIN users_locations ul ON u.id = ul.user_id
-                    WHERE u.email = $1
-                    GROUP BY u.id;`, [email]);
+        SELECT
+        u.id AS user_id,
+        u.firstname,
+        u.lastname,
+        u.phone_number,
+        u.email,
+        ARRAY_AGG(DISTINCT (us.sport_id)) AS sports,
+        ARRAY_AGG(DISTINCT ul.location) AS locations,
+        COALESCE(avg(r.rating)::float, 0) as rating,
+        COALESCE(r.count_ratings, 0)::integer as count
+    FROM users u
+    LEFT JOIN users_sports us ON u.id = us.user_id
+    LEFT JOIN users_locations ul ON u.id = ul.user_id
+    LEFT JOIN (
+        SELECT rated, AVG(rating) AS rating, COUNT(*) AS count_ratings
+        FROM ratings
+        GROUP BY rated
+    ) r ON u.id = r.rated
+    WHERE u.email = $1
+    GROUP BY u.id, r.count_ratings;`, [email]);
 
         return user.rows[0];
     }
