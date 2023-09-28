@@ -96,9 +96,8 @@ class EventsController {
         })
     .build())
     @validateBody(Joi.object({
-        owner_id: Joi.number().min(1).required(),
         sport_id: Joi.number().min(1).required(),
-        expertise: Joi.string().required(),
+        expertise: Joi.number().required(),
         schedule: Joi.date().required(),
         location: Joi.string().required(),
         remaining: Joi.number().required(),
@@ -107,10 +106,11 @@ class EventsController {
     }))
     @HttpRequestInfo("/events", HTTP_METHODS.POST)
     public async createEvent(req: Request, res: Response, next: NextFunction) {
-        const { owner_id, sport_id, expertise, description, schedule, duration, location, remaining } = req.body;
+        const { sport_id, expertise, description, schedule, duration, location, remaining } = req.body;
+        const ownerEmail = req.user.email;
 
         try {
-            const event = await this.eventsService.createEvent(owner_id, sport_id, expertise, location, schedule, description, duration, remaining);
+            const event = await this.eventsService.createEvent(ownerEmail, sport_id, expertise, location, schedule, description, duration, remaining);
             res.status(HTTP_STATUS.CREATED).send({eventId: event});
         } catch (err) {
             next(err);

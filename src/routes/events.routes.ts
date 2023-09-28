@@ -25,6 +25,6 @@ export default class EventsRoutes {
         this.router.get('/:eventId/owner/participants', this.controller.getParticipants);
         this.router.delete('/:eventId/owner/participants', cognitoUserMiddleware, this.controller.ownerRemoveParticipant);
 
-        this.router.post('/', this.controller.createEvent);
+        this.router.post('/', cognitoUserMiddleware, this.controller.createEvent);
     }
 }
