@@ -24,10 +24,7 @@ class EventsService {
         const query = `DELETE FROM participants
         WHERE event_id = ${eventId} AND user_id = (select id from users where email = '${email}') ${ownerEmail ? ` AND event_id IN (select id from events where owner_id in (select id from users where email = '${ownerEmail}'))`: ""}`;
 
-
-        console.log(query);
         const res = await pool.query(query)
-        console.log(res);
         if (res.rowCount === 0) throw new GenericException({ message: "Participant not found", status: 404, internalStatus: "PARTICIPANT_NF" });
     }
 
@@ -192,7 +189,6 @@ class EventsService {
         VALUES(${owner_id}, ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${duration}, ${remaining}) RETURNING id;`;
 
         const res = await pool.query(query);
-        console.log(res);
         return res.rows[0].id;
     }
 }

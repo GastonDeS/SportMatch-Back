@@ -33,7 +33,6 @@ const cognitoUserMiddleware = async (req: Request, res: Response, next: NextFunc
 
     } catch (err) {
         next(err);
-        console.log(err);
     }
 }
 
