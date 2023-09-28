@@ -2,13 +2,15 @@ import pool from "../database/postgres.database";
 
 // this is a helper for running on local
 export const createDBTables = async (): Promise<void>  => {
-    await pool.query(`DROP TABLE IF EXISTS participants;`);
-    await pool.query(`DROP TABLE IF EXISTS ratings;`);
-    await pool.query(`DROP TABLE IF EXISTS users_sports;`);
-    await pool.query(`DROP TABLE IF EXISTS users_locations;`);
-    await pool.query(`DROP TABLE IF EXISTS events;`);
-    await pool.query(`DROP TABLE IF EXISTS sports;`);
-    await pool.query(`DROP TABLE IF EXISTS users;`);
+    if (process.env.IS_LOCAL) {
+        await pool.query(`DROP TABLE IF EXISTS participants;`);
+        await pool.query(`DROP TABLE IF EXISTS ratings;`);
+        await pool.query(`DROP TABLE IF EXISTS users_sports;`);
+        await pool.query(`DROP TABLE IF EXISTS users_locations;`);
+        await pool.query(`DROP TABLE IF EXISTS events;`);
+        await pool.query(`DROP TABLE IF EXISTS sports;`);
+        await pool.query(`DROP TABLE IF EXISTS users;`);
+    }
 
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id serial PRIMARY KEY,
@@ -107,6 +109,7 @@ export const createDBTables = async (): Promise<void>  => {
         CONSTRAINT check_rating CHECK(rating >= 1 AND rating <= 5) );`
     );
 
+    if (!process.env.IS_LOCAL) return;
     await pool.query(`INSERT INTO users (firstname, lastname, phone_number, email) VALUES
         ('John', 'Doe', '2235910122', 'xosedaw912@alvisani.com'),
         ('Jane', 'Doe', '2235910125', 'janeDoe@gmail.com'),
