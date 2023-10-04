@@ -131,8 +131,8 @@ class UsersController {
         const userId = req.params.userId;
         
         try {
-            const user = await this.awsService.getPresignedGetUrl(userId);
-            res.status(HTTP_STATUS.OK).send(user);
+            const presignedGetUrl = this.awsService.getPresignedGetUrl(userId);
+            res.status(HTTP_STATUS.OK).send({ presignedGetUrl });
         } catch (err) {
             next(err);
         }
@@ -144,8 +144,8 @@ class UsersController {
         try {
             const user = await this.usersService.getUserByEmail(email);
 
-            const presignedUrl = this.awsService.getPresignedPostUrl(user.user_id);
-            res.status(HTTP_STATUS.OK).send();
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(user.user_id);
+            res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
         } catch (err) {
             next(err);
         }

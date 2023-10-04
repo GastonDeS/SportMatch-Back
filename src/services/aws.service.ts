@@ -12,7 +12,7 @@ class AWSService {
     private s3: AWS.S3;
 
     constructor() {
-        AWS.config.update({/*credentials: credentials,*/ region: 'us-east-1'});
+        AWS.config.update({credentials: credentials, region: 'us-east-1'});
         this.s3 = new AWS.S3();
     }
 
