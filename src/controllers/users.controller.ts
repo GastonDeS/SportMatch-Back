@@ -6,14 +6,17 @@ import { HttpRequestInfo, validateBody, validateParams, validateQuery } from "..
 import Joi from "joi";
 import { document } from "../utils/swaggerDocumentation/annotations";
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
+import AWSService from "../services/aws.service";
 
 
 @autobind
 class UsersController {
     private readonly usersService: UsersService;
+    private readonly awsService: AWSService;
 
     constructor() {
         this.usersService = UsersService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
@@ -124,6 +127,29 @@ class UsersController {
         }
     }
 
+    public async getUserImage(req: Request, res: Response, next: NextFunction) {
+        const userId = req.params.userId;
+        
+        try {
+            const user = await this.awsService.getPresignedGetUrl(userId);
+            res.status(HTTP_STATUS.OK).send(user);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    public async updateUserImage(req: Request, res: Response, next: NextFunction) {
+        const email = req.user.email;
+        
+        try {
+            const user = await this.usersService.getUserByEmail(email);
+
+            const presignedUrl = this.awsService.getPresignedPostUrl(user.user_id);
+            res.status(HTTP_STATUS.OK).send();
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default UsersController;

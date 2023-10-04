@@ -21,5 +21,7 @@ export default class UsersRoutes {
         this.router.post('/', cognitoUserMiddleware, this.controller.createUser);
         this.router.post('/:userId/rate', cognitoUserMiddleware, this.controller.rateUser);
         this.router.put('/:userId', cognitoUserMiddleware, this.controller.updateUser);
+        this.router.get('/:userId/image', cognitoUserMiddleware, this.controller.getUserImage);
+        this.router.put('/:userId/image', cognitoUserMiddleware, this.controller.updateUserImage);
     }
 }
