@@ -144,7 +144,7 @@ class UsersController {
         try {
             const user = await this.usersService.getUserByEmail(email);
 
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(user.user_id);
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(`userid:${user.user_id}`);
             res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
         } catch (err) {
             next(err);

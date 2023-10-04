@@ -1,9 +1,9 @@
 import AWS from 'aws-sdk';
 
-// const credentials = {
-//     accessKeyId: process.env.S3_ACCESS_KEY ?? "",
-//     secretAccessKey : process.env.S3_SECRET_KEY ?? ""
-// };
+const credentials = {
+    accessKeyId: process.env.S3_ACCESS_KEY ?? "",
+    secretAccessKey : process.env.S3_SECRET_KEY ?? ""
+};
 
 class AWSService {
     private static instance: AWSService;
@@ -12,7 +12,7 @@ class AWSService {
     private s3: AWS.S3;
 
     constructor() {
-        AWS.config.update({/*credentials: credentials,*/ region: 'us-east-1'});
+        AWS.config.update({credentials: credentials, region: 'us-east-1'});
         this.s3 = new AWS.S3();
     }
 

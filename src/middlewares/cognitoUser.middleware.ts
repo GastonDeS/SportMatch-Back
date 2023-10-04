@@ -32,6 +32,8 @@ const cognitoUserMiddleware = async (req: Request, res: Response, next: NextFunc
         next();
 
     } catch (err) {
+        if (err.message.includes("Token expired"))
+            err = new GenericException({message: "Token expired", status: 401, internalStatus: "TOKEN_EXPIRED"});
         next(err);
     }
 }
