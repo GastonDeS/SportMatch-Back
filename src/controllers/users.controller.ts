@@ -131,7 +131,7 @@ class UsersController {
         const userId = req.params.userId;
         
         try {
-            const presignedGetUrl = this.awsService.getPresignedGetUrl(userId);
+            const presignedGetUrl = this.awsService.getPresignedGetUrl(`userid:${userId}`);
             res.status(HTTP_STATUS.OK).send({ presignedGetUrl });
         } catch (err) {
             next(err);
