@@ -8,7 +8,7 @@ const credentials = {
 class AWSService {
     private static instance: AWSService;
     private readonly URL_TIMEOUT = 100; // seconds
-    private readonly PROFILE_PICTURES_BUCKET = "sportsmatch-profile-pictures";
+    private readonly PROFILE_PICTURES_BUCKET = "sportsmatch-user-pictures";
     private s3: AWS.S3;
 
     constructor() {
