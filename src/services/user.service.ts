@@ -83,8 +83,8 @@ class UsersService {
 
     public async updateUser(userId: string, email: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<any> {
         if (phone_number) await this.updatePhoneNumber(userId, email, phone_number);
-        if (locations) await this.updateLocations(userId, email, locations);
-        if (sports) await this.updateSports(userId, email, sports);
+        if (locations && locations.length > 0) await this.updateLocations(userId, email, locations);
+        if (sports && sports.length > 0) await this.updateSports(userId, email, sports);
     }
 
     private async updatePhoneNumber(userId: string, email: string, phone_number: string): Promise<any> {
