@@ -83,8 +83,8 @@ class UsersService {
 
     public async updateUser(userId: string, email: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<any> {
         if (phone_number) await this.updatePhoneNumber(userId, email, phone_number);
-        if (locations && locations.length > 0) await this.updateLocations(userId, email, locations);
-        if (sports && sports.length > 0) await this.updateSports(userId, email, sports);
+        if (locations) await this.updateLocations(userId, email, locations);
+        if (sports) await this.updateSports(userId, email, sports);
     }
 
     private async updatePhoneNumber(userId: string, email: string, phone_number: string): Promise<any> {
@@ -93,12 +93,17 @@ class UsersService {
     }
 
     private async updateLocations(userId: string, email: string, locations: string[]): Promise<any> {
-        const res = await pool.query(`SELECT count(*) FROM users WHERE id = $1 AND email = $2;`, [userId, email]);
-        if (res.rows[0].count === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
-        await pool.query(`DELETE FROM users_locations WHERE user_id = $1;`, [userId]);
-        
-        const query = this.createLocationQuery(locations);
-        await pool.query(query, [userId]);
+        if (locations.length > 0) {
+            const res = await pool.query(`SELECT count(*) FROM users WHERE id = $1 AND email = $2;`, [userId, email]);
+            if (res.rows[0].count === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
+            await pool.query(`DELETE FROM users_locations WHERE user_id = $1;`, [userId]);
+
+            const query = this.createLocationQuery(locations);
+            await pool.query(query, [userId]);
+        } else {
+            await pool.query(`
+                DELETE FROM users_locations WHERE user_id = (SELECT id from users where email = $2 AND id = $1);`, [userId, email]);
+        }
     }
 
     private createLocationQuery(locations: string[]): string {
@@ -114,12 +119,17 @@ class UsersService {
     }
 
     private async updateSports(userId: string, email: string, sports: string[]): Promise<void> {
-        const res = await pool.query(`SELECT count(*) FROM users WHERE id = $1 AND email = $2;`, [userId, email]);
-        if (res.rows[0].count === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
-        await pool.query(`
-            DELETE FROM users_sports WHERE user_id = (SELECT id from users where email = $2 AND id = $1);`, [userId, email]);
-        const query = this.createSportsQuery(sports);
-        await pool.query(query, [userId]);
+        if (sports.length > 0 ) {
+            const res = await pool.query(`SELECT count(*) FROM users WHERE id = $1 AND email = $2;`, [userId, email]);
+            if (res.rows[0].count === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
+            await pool.query(`
+                DELETE FROM users_sports WHERE user_id = (SELECT id from users where email = $2 AND id = $1);`, [userId, email]);
+            const query = this.createSportsQuery(sports);
+            await pool.query(query, [userId]);
+        } else {
+            await pool.query(`
+                DELETE FROM users_sports WHERE user_id = (SELECT id from users where email = $2 AND id = $1);`, [userId, email]);
+        }
     }
 
     private createSportsQuery(sports: string[]): string {
