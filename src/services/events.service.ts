@@ -70,7 +70,7 @@ class EventsService {
                 events.sport_id,
                 events.remaining - COUNT(participants.id) AS remaining,
                 users.firstname AS owner_firstname,
-                users.id AS owner_id,
+                users.id AS owner_id
             FROM
                 events
             JOIN
@@ -83,7 +83,8 @@ class EventsService {
                 events.id, users.firstname, users.id`;
                 
         const res = await pool.query(query);
-        return res.rows;
+        if (res.rows.length === 0) throw new GenericException({ message: "Event not found", status: 404, internalStatus: "EVENT_NF" });
+        return res.rows[0];
     }
 
     public async getEvents(queryFilters: Record<string, string>): Promise<any> {
