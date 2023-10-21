@@ -69,7 +69,8 @@ class EventsService {
                 events.expertise,
                 events.sport_id,
                 events.remaining - COUNT(participants.id) AS remaining,
-                users.firstname AS owner_firstname
+                users.firstname AS owner_firstname,
+                users.id AS owner_id,
             FROM
                 events
             JOIN
@@ -79,7 +80,7 @@ class EventsService {
             WHERE
                 events.id = ${eventId}
             GROUP BY
-                events.id, users.firstname`;
+                events.id, users.firstname, users.id`;
                 
         const res = await pool.query(query);
         return res.rows;
@@ -100,6 +101,7 @@ class EventsService {
             events.sport_id,
             (events.remaining - COUNT(participants.id))::integer AS remaining,
             users.firstname AS owner_firstname,
+            users.id AS owner_id,
             ${participantIdFilter ? "participants.status as participant_status," : ""}
             ${participantIdFilter ? "COALESCE(rated_aux.isRated, 0) as is_rated," : ""}
             COALESCE(rate.rating::float, 0) as rating,
@@ -149,7 +151,7 @@ class EventsService {
                 queryBuilder.addFilter(`events.schedule >= CURRENT_TIMESTAMP`);
         }
 
-        queryBuilder.addGroupBy(`events.id, users.firstname`);
+        queryBuilder.addGroupBy(`events.id, users.firstname, users.id`);
         if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
         queryBuilder.addGroupBy(`rate.rating, rate.count`);
         if (participantIdFilter)
