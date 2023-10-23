@@ -120,8 +120,8 @@ class UsersController {
         const email = req.user.email;
 
         try {
-            const user = await this.usersService.updateUser(userId, email, phone_number, locations, sports);
-            res.status(HTTP_STATUS.OK).send(user);
+            await this.usersService.updateUser(userId, email, phone_number, locations, sports);
+            res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
         }

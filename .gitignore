@@ -6,3 +6,4 @@ pnpm-lock.yaml
 .npmrc
 .vscode/settings.json
 package-lock.json
+coverage

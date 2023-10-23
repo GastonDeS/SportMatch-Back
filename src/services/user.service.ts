@@ -45,7 +45,7 @@ class UsersService {
         return user.rows[0];
     }
 
-    public async rateUser(rated: string, rater: string, rating: number, eventId: string): Promise<any> {
+    public async rateUser(rated: string, rater: string, rating: number, eventId: string): Promise<void> {
         const query = `
           WITH selected_event AS (
             SELECT id
@@ -81,18 +81,18 @@ class UsersService {
         return users.rows[0];
     }
 
-    public async updateUser(userId: string, email: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<any> {
+    public async updateUser(userId: string, email: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<void> {
         if (phone_number) await this.updatePhoneNumber(userId, email, phone_number);
         if (locations) await this.updateLocations(userId, email, locations);
         if (sports) await this.updateSports(userId, email, sports);
     }
 
-    private async updatePhoneNumber(userId: string, email: string, phone_number: string): Promise<any> {
+    private async updatePhoneNumber(userId: string, email: string, phone_number: string): Promise<void> {
         const res = await pool.query(`UPDATE users SET phone_number = $1 WHERE id = $2 AND email = $3 returning id;`, [phone_number, userId, email]);
         if (res.rowCount === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
     }
 
-    private async updateLocations(userId: string, email: string, locations: string[]): Promise<any> {
+    private async updateLocations(userId: string, email: string, locations: string[]): Promise<void> {
         if (locations.length > 0) {
             const res = await pool.query(`SELECT count(*) FROM users WHERE id = $1 AND email = $2;`, [userId, email]);
             if (res.rows[0].count === 0) throw new GenericException({ message: "User not found", status: 404, internalStatus: "NOT_FOUND"});
