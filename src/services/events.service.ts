@@ -1,6 +1,7 @@
 import { TIME_OF_DAY } from "../constants/events.constants";
 import pool, { QueryBuilder } from "../database/postgres.database";
 import GenericException from "../exceptions/generic.exception";
+import { IEvent } from "../interfaces/event.interface";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -179,18 +180,9 @@ class EventsService {
         `;
     }
 
-    public async createEvent(
-        ownerEmail: string,
-        sport_id: number,
-        expertise: number,
-        location: string,
-        schedule: string,
-        description: string,
-        duration: number,
-        remaining: number
-    ) {
+    public async createEvent(event: IEvent) {
         const query = `INSERT INTO events(owner_id, sport_id, expertise, location, schedule, description, duration, remaining)
-        VALUES((SELECT id from users where email = '${ownerEmail}'), ${sport_id}, ${expertise}, ${location ? `'${location}'` : null }, TO_TIMESTAMP('${schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${description ? `'${description}'` : null}, ${duration}, ${remaining}) RETURNING id;`;
+        VALUES((SELECT id from users where email = '${event.ownerEmail}'), ${event.sport_id}, ${event.expertise}, ${event.location ? `'${event.location}'` : null }, TO_TIMESTAMP('${event.schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${event.description ? `'${event.description}'` : null}, ${event.duration}, ${event.remaining}) RETURNING id;`;
 
         const res = await pool.query(query);
         return res.rows[0].id;

@@ -110,7 +110,9 @@ class EventsController {
         const ownerEmail = req.user.email;
 
         try {
-            const event = await this.eventsService.createEvent(ownerEmail, sport_id, expertise, location, schedule, description, duration, remaining);
+            const event = await this.eventsService.createEvent({
+                ownerEmail, sport_id, expertise, location, schedule, description, duration, remaining
+            });
             res.status(HTTP_STATUS.CREATED).send({eventId: event});
         } catch (err) {
             next(err);
