@@ -3,11 +3,11 @@ import cors from 'cors';
 
 import ErrorHandlerMiddleware from './middlewares/errorHandler.middleware';
 import HealthRoutes from './routes/health.routes';
-import pool from './database/postgres.database';
 import { createDBTables } from './utils/dblocalHelper';
 import UsersRoutes from './routes/users.routes';
 import EventsRoutes from './routes/events.routes';
 import initializeSwagger from './utils/swaggerDocumentation/swagger.main';
+import './database/connection';
 
 class App {
     public app: Application;
@@ -41,22 +41,15 @@ class App {
     private initializeDatabases(): void {
         if (process.env.DB_HOST) {
             try {
-                pool.connect().then(() => {
-                    console.log("Connected to DB");
-
-                    createDBTables().then(() => {
-                        console.log("Created DB tables");
-                    });
-                }).catch((err) => {
-                    console.log(err);
-                });
+                // createDBTables().then(async () => {
+                    // console.log("Connected to DB");
+                // }).catch((err) => { console.log(err); });
             } catch (err) {
                 console.log(err);
             }
         }
     }
 
-    // TODO: Organize the services by categories so it's not a mess
     private initializeServices(): void {
     }
 

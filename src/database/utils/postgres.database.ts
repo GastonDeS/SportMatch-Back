@@ -1,14 +1,3 @@
-import PG from "pg";
-
-const pool = new PG.Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
-    port: Number(process.env.DB_PORT),
-    ssl: process.env.IS_LOCAL ? false : true
-})
-
 export class QueryBuilder {
     private queryParts: string[] = [];
     private filtersActive: boolean = false;
@@ -46,5 +35,3 @@ export class QueryBuilder {
         return this.queryParts.join("");
     }
 }
-
-export default pool;
