@@ -196,7 +196,7 @@ describe("Event Service test", () => {
             expect(error).toBeInstanceOf(GenericException);
             expect(error.message).toEqual("User not found");
             expect(error.status).toEqual(404);
-            expect(error.internalStatus).toEqual("USER_NF");
+            expect(error.internalStatus).toEqual("NOT_FOUND");
           }
         });
       
@@ -221,7 +221,7 @@ describe("Event Service test", () => {
             expect(error).toBeInstanceOf(GenericException);
             expect(error.message).toEqual("Participant not found");
             expect(error.status).toEqual(404);
-            expect(error.internalStatus).toEqual("PARTICIPANT_NF");
+            expect(error.internalStatus).toEqual("NOT_FOUND");
           }
         });
       
@@ -309,7 +309,7 @@ describe("Event Service test", () => {
             expect(error).toBeInstanceOf(GenericException);
             expect(error.message).toEqual("Owner not found");
             expect(error.status).toEqual(404);
-            expect(error.internalStatus).toEqual("OWNER_NF");
+            expect(error.internalStatus).toEqual("NOT_FOUND");
           }
         });
     });
