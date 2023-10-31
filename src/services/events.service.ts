@@ -135,7 +135,7 @@ class EventsService {
             if (userId !== undefined) queryBuilder.addFilter(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
     
             const participantId = queryFilters.participantId?.toString().trim();
-            if (participantIdFilter) queryBuilder.addFilter(`participants.user_id = ${participantId}`);
+            if (participantIdFilter) queryBuilder.addFilter(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
 
             const location = queryFilters.location?.toString().trim();
             if (location !== undefined) queryBuilder.addFilter(`events.location = '${location}'`);
@@ -160,6 +160,8 @@ class EventsService {
             queryBuilder.addGroupBy(`rated_aux.isRated`);
         queryBuilder.addOrderBy(`events.schedule ASC `);
         queryBuilder.addPagination(page, limit);
+
+        // console.log(queryBuilder.build());
 
         const res = await pool.query(queryBuilder.build());
         return {
