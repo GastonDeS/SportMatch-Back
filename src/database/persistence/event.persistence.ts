@@ -96,7 +96,24 @@ class EventPersistence {
 
         const events = await sequelize.query(queryBuilder.build());
 
-        return events;
+        return events[0].map((event: any) => {
+            return {
+                event_id: event.event_id,
+                description: event.description,
+                schedule: event.schedule,
+                location: event.location,
+                expertise: event.expertise,
+                sport_id: event.sport_id,
+                remaining: event.remaining,
+                owner_firstname: event.owner_firstname,
+                owner_id: event.owner_id,
+                participant_status: event.participant_status,
+                is_rated: event.is_rated,
+                rating: event.rating,
+                rate_count: event.rate_count,
+                event_status: event.event_status
+            };
+        });
     }
 
     private static getTimeEventFilter(schedule: string): string {
