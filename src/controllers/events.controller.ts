@@ -52,9 +52,11 @@ class EventsController {
     @HttpRequestInfo("/events", HTTP_METHODS.GET)
     public async getEvents(req: Request, res: Response, next: NextFunction) {
         const queryFilters = req.query as Record<string, string>;
+        const page = parseInt(queryFilters.page || "0");
+        const limit = parseInt(queryFilters.limit || "20");
         
         try {
-            const events = await this.eventsService.getEvents(queryFilters);
+            const events = await this.eventsService.getEvents(queryFilters, page, limit);
             res.status(HTTP_STATUS.OK).send(events);
         } catch (err) {
             next(err);
@@ -76,7 +78,7 @@ class EventsController {
     }))
     @HttpRequestInfo("/events/{eventId}", HTTP_METHODS.GET)
     public async getEventById(req: Request, res: Response, next: NextFunction) {
-        const eventId = parseInt(req.params.eventId);
+        const eventId = req.params.eventId;
 
         try {
             const event = await this.eventsService.getEventById(eventId);
@@ -108,12 +110,12 @@ class EventsController {
     }))
     @HttpRequestInfo("/events", HTTP_METHODS.POST)
     public async createEvent(req: Request, res: Response, next: NextFunction) {
-        const { sport_id, expertise, description, schedule, duration, location, remaining } = req.body;
+        const { sportId, expertise, description, schedule, duration, location, remaining } = req.body;
         const ownerEmail = req.user.email;
 
         try {
             const event = await this.eventsService.createEvent({
-                ownerEmail, sport_id, expertise, location, schedule, description, duration, remaining
+                ownerEmail, sportId, expertise, location, schedule, description, duration, remaining
             });
             res.status(HTTP_STATUS.CREATED).send({eventId: event});
         } catch (err) {
@@ -137,7 +139,7 @@ class EventsController {
     @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.PUT)
     public async addParticipant(req: Request, res: Response, next: NextFunction) {
         const email = req.user.email;
-        const eventId = parseInt(req.params.eventId);
+        const eventId = req.params.eventId;
         try {
             await this.eventsService.addParticipant(eventId, email);
             res.status(HTTP_STATUS.OK).send();
@@ -163,7 +165,7 @@ class EventsController {
     @HttpRequestInfo("/events/:eventId/participants", "delete")
     public async removeParticipant(req: Request, res: Response, next: NextFunction) {
         const email = req.user.email;
-        const eventId = parseInt(req.params.eventId);
+        const eventId = req.params.eventId;
         try {
             await this.eventsService.removeParticipant(eventId, email);
             res.status(HTTP_STATUS.OK).send();
@@ -192,7 +194,7 @@ class EventsController {
     public async ownerRemoveParticipant(req: Request, res: Response, next: NextFunction) {
         const email = req.body.email;
         const owner = req.user.email;
-        const eventId = parseInt(req.params.eventId);
+        const eventId = req.params.eventId;
         try {
             await this.eventsService.removeParticipant(eventId, email, owner);
             res.status(HTTP_STATUS.OK).send();

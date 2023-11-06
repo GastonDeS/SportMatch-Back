@@ -1,7 +1,12 @@
-import { TIME_OF_DAY } from "../constants/events.constants";
-import pool, { QueryBuilder } from "../database/postgres.database";
 import GenericException from "../exceptions/generic.exception";
-import { IEvent } from "../interfaces/event.interface";
+import { IEvent, EventQuery } from "../interfaces/event.interface";
+import { Page } from "../interfaces/api.interface";
+import ParticipantPersistence from "../database/persistence/participant.persistence";
+import UserPersistence from "../database/persistence/user.persistence";
+import EventPersistence from "../database/persistence/event.persistence";
+import Participant from "../database/models/Participant.model";
+import Event, { IEventDetail } from "../database/models/Event.model";
+import NotFoundException from "../exceptions/notFound.exception";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -14,180 +19,69 @@ class EventsService {
         return this.instance;
     }
 
-    public async addParticipant(eventId: number, email: string): Promise<void> {
-        const query = `INSERT INTO participants(event_id, user_id, status)
-        VALUES(${eventId}, (select id from users where email = '${email}'), false)`;
+    public async addParticipant(eventId: string, email: string): Promise<Participant> {
+        const event = await EventPersistence.getEventById(eventId);
+        if (!event) throw new NotFoundException("Event");
+        const user = await UserPersistence.getUserByEmail(email);
+        if (!user) throw new NotFoundException("User");
 
-        await pool.query(query);
+        const participant = await ParticipantPersistence.createParticipant(eventId.toString(), user.id.toString());
+        return participant;
     }
 
-    public async removeParticipant(eventId: number, email: string, ownerEmail?: string): Promise<void> {
-        const query = `DELETE FROM participants
-        WHERE event_id = ${eventId} AND user_id = (select id from users where email = '${email}') ${ownerEmail ? ` AND event_id IN (select id from events where owner_id in (select id from users where email = '${ownerEmail}'))`: ""}`;
-
-        const res = await pool.query(query)
-        if (res.rowCount === 0) throw new GenericException({ message: "Participant not found", status: 404, internalStatus: "PARTICIPANT_NF" });
+    public async removeParticipant(eventId: string, email: string, ownerEmail?: string): Promise<void> {
+        const user = await UserPersistence.getUserByEmail(email);
+        if (!user) throw new NotFoundException("User");
+        if (ownerEmail) {
+            const owner = await UserPersistence.getUserByEmail(ownerEmail);
+            if (!owner) throw new NotFoundException("Owner")
+            const event = await EventPersistence.getEventById(eventId);
+            if (!event) throw new NotFoundException("Event");
+            if (event.ownerId !== owner.id) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
+        }
+        const removed = await ParticipantPersistence.removeParticipant(eventId.toString(), user.id.toString());
+        if (!removed) throw new NotFoundException("Participant");
     }
 
     public async acceptParticipant(eventId: number, email: string, ownerEmail: string): Promise<void> {
-        const query = `UPDATE participants
-        SET status = true
-        WHERE event_id = ${eventId} AND user_id = (select id from users where email = '${email}') AND event_id IN (select id from events where owner_id in (select id from users where email = '${ownerEmail}'))`;
-
-        const res = await pool.query(query);
-        if (res.rowCount === 0) throw new GenericException({ message: "Participant not found", status: 404, internalStatus: "PARTICIPANT_NF" });
+        const user = await UserPersistence.getUserByEmail(email);
+        if (!user) throw new NotFoundException("User");
+        if (ownerEmail) {
+            const owner = await UserPersistence.getUserByEmail(ownerEmail);
+            if (!owner) throw new NotFoundException("Owner")
+            const event = await EventPersistence.getEventById(eventId.toString());
+            if (!event) throw new NotFoundException("Event");
+            if (event.ownerId !== owner.id) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
+        }
+        await ParticipantPersistence.updateStatus(eventId.toString(), user.id.toString(), true);
     }
 
     public async getParticipants(eventId: number): Promise<any> {
-        const query =   `SELECT 
-                            participants.user_id,
-                            users.firstname as firstname,
-                            users.lastname as lastname,
-                            users.email as email,
-                            participants.status as participant_status,
-                            users.phone_number as phone_number,
-                            COALESCE(avg(rating)::float, 0) as rating,
-                            COALESCE(count(rating)::integer, 0) as count,
-                            COALESCE(rated_aux.isRated, 0) as is_rated
-                        FROM participants 
-                            left outer join users on participants.user_id = users.id
-                            left outer join ratings on participants.user_id = ratings.rated
-                            left outer join (
-                                select max(1) as isRated, rated from ratings where event_id = ${eventId} group by rated
-                            ) as rated_aux on rated_aux.rated = participants.user_id
-                        WHERE participants.event_id = ${eventId}
-                        GROUP BY participants.user_id, users.firstname, users.lastname, users.email, participants.status, users.phone_number, rated_aux.isRated`;
-        const res = await pool.query(query);
-        return res.rows;
+        return await ParticipantPersistence.getParticipantsDetailsByEventId(eventId.toString());
     }
 
-    public async getEventById(eventId: number): Promise<any> {
-        const query = `SELECT
-                events.id AS event_id,
-                events.description,
-                events.schedule::text,
-                events.location,
-                events.expertise,
-                events.sport_id,
-                events.remaining - COUNT(participants.id) AS remaining,
-                users.firstname AS owner_firstname,
-                users.id AS owner_id
-            FROM
-                events
-            JOIN
-                users ON events.owner_id = users.id
-            LEFT JOIN
-                participants ON events.id = participants.event_id AND participants.status = 'true'
-            WHERE
-                events.id = ${eventId}
-            GROUP BY
-                events.id, users.firstname, users.id`;
-                
-        const res = await pool.query(query);
-        if (res.rows.length === 0) throw new GenericException({ message: "Event not found", status: 404, internalStatus: "EVENT_NF" });
-        return res.rows[0];
+    public async getEventById(eventId: string): Promise<IEventDetail> {
+        const event = await EventPersistence.getEventDetailById(eventId.toString());
+        if (!event) throw new NotFoundException("Event");
+
+        return event;
     }
 
-    public async getEvents(queryFilters: Record<string, string>): Promise<any> {
-        const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
-        const filterOut = !!queryFilters.filterOut;
-        const page = queryFilters.page ? parseInt(queryFilters.page.toString().trim()) : 0;
-        const limit = queryFilters.limit ? parseInt(queryFilters.limit.toString().trim()) : 20;
+    public async getEvents(queryFilters: Record<string, string>, page = 0, limit = 20): Promise<Page<EventQuery>> {
+        const events = await EventPersistence.getEvents(queryFilters, page, limit);
 
-        const queryBuilder = new QueryBuilder(`SELECT
-            events.id AS event_id,
-            events.description,
-            events.schedule::text as schedule,
-            events.location,
-            events.expertise,
-            events.sport_id,
-            (events.remaining - COUNT(participants.id))::integer AS remaining,
-            users.firstname AS owner_firstname,
-            users.id AS owner_id,
-            ${participantIdFilter ? "participants.status as participant_status," : ""}
-            ${participantIdFilter ? "COALESCE(rated_aux.isRated, 0) as is_rated," : ""}
-            COALESCE(rate.rating::float, 0) as rating,
-            COALESCE(rate.count::integer, 0) as rate_count,
-            CASE
-                WHEN events.schedule > CURRENT_TIMESTAMP THEN 0
-                WHEN events.schedule <= CURRENT_TIMESTAMP AND events.schedule + (events.duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
-                ELSE 2
-            END AS event_status
-            FROM
-                events
-            JOIN
-                users ON events.owner_id = users.id
-            LEFT JOIN
-                participants ON events.id = participants.event_id
-            LEFT JOIN (
-                SELECT rated, avg(rating) as rating, count(rating) as count FROM ratings GROUP BY rated
-            ) as rate ON events.owner_id = rate.rated
-            ${participantIdFilter ? `LEFT JOIN (
-                SELECT max(1) as isRated, event_id from ratings where rater = ${queryFilters.participantId} group by event_id
-            ) as rated_aux ON rated_aux.event_id = events.id` :
-                ""}\n`);
-
-        if (queryFilters !== undefined) {
-            const sportId = queryFilters.sportId?.toString().trim();
-            if (sportId !== undefined) queryBuilder.addFilter(`sport_id = ${sportId}`);
-
-            const userId = queryFilters.userId?.toString().trim();
-            if (userId !== undefined) queryBuilder.addFilter(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
-    
-            const participantId = queryFilters.participantId?.toString().trim();
-            if (participantIdFilter) queryBuilder.addFilter(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
-
-            const location = queryFilters.location?.toString().trim();
-            if (location !== undefined) queryBuilder.addFilter(`events.location = '${location}'`);
-
-            const expertise = queryFilters.expertise?.toString().trim();
-            if (expertise !== undefined) queryBuilder.addFilter(`events.expertise = ${expertise}`);
-
-            const date = queryFilters.date?.toString();
-            if (date !== undefined) queryBuilder.addFilter(`TO_CHAR(schedule, 'YYYY-MM-DD') = '${date}'`);
-
-            const schedule = queryFilters.schedule?.toString().trim();
-            if (schedule !== undefined) queryBuilder.addFilter(this.getTimeEventFilter(schedule));
-
-            if (userId === undefined && participantId === undefined)
-                queryBuilder.addFilter(`events.schedule >= CURRENT_TIMESTAMP`);
-        }
-
-        queryBuilder.addGroupBy(`events.id, users.firstname, users.id`);
-        if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
-        queryBuilder.addGroupBy(`rate.rating, rate.count`);
-        if (participantIdFilter)
-            queryBuilder.addGroupBy(`rated_aux.isRated`);
-        queryBuilder.addOrderBy(`events.schedule ASC `);
-        queryBuilder.addPagination(page, limit);
-
-        // console.log(queryBuilder.build());
-
-        const res = await pool.query(queryBuilder.build());
         return {
             page: page,
-            pageSize: res.rows.length,
-            items: res.rows
+            pageSize: events.length,
+            items: events
         };
     }
 
-    private getTimeEventFilter(schedule: string) {
+    public async createEvent(event: IEvent): Promise<Event> {
+        const owner = await UserPersistence.getUserByEmail(event.ownerEmail);
+        if (!owner) throw new NotFoundException("Owner" );
 
-        const times = `{${schedule.split(",")}}`
-
-        return `
-         ((EXTRACT(HOUR FROM events.schedule) >= 6 AND EXTRACT(HOUR FROM events.schedule) < 12 AND 0 = ANY('${times}')) OR
-        (EXTRACT(HOUR FROM events.schedule) >= 12 AND EXTRACT(HOUR FROM events.schedule) < 18 AND 1 = ANY('${times}')) OR
-        ((EXTRACT(HOUR FROM events.schedule) >= 18 OR EXTRACT(HOUR FROM events.schedule) < 6) AND 2 = ANY('${times}')))
-        `;
-    }
-
-    public async createEvent(event: IEvent) {
-        const query = `INSERT INTO events(owner_id, sport_id, expertise, location, schedule, description, duration, remaining)
-        VALUES((SELECT id from users where email = '${event.ownerEmail}'), ${event.sport_id}, ${event.expertise}, ${event.location ? `'${event.location}'` : null }, TO_TIMESTAMP('${event.schedule}', 'YYYY-MM-DD HH24:MI:SS'), ${event.description ? `'${event.description}'` : null}, ${event.duration}, ${event.remaining}) RETURNING id;`;
-
-        const res = await pool.query(query);
-        return res.rows[0].id;
+        return await EventPersistence.createEvent(event, owner.id.toString());
     }
 }
 
