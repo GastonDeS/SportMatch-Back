@@ -52,9 +52,11 @@ class EventsController {
     @HttpRequestInfo("/events", HTTP_METHODS.GET)
     public async getEvents(req: Request, res: Response, next: NextFunction) {
         const queryFilters = req.query as Record<string, string>;
+        const page = parseInt(queryFilters.page || "0");
+        const limit = parseInt(queryFilters.limit || "20");
         
         try {
-            const events = await this.eventsService.getEvents(queryFilters);
+            const events = await this.eventsService.getEvents(queryFilters, page, limit);
             res.status(HTTP_STATUS.OK).send(events);
         } catch (err) {
             next(err);
