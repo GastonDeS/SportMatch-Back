@@ -68,7 +68,7 @@ class EventPersistence {
         if (userId !== undefined) queryBuilder.addFilter(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
 
         const participantId = queryFilters.participantId?.toString().trim();
-        if (participantIdFilter) queryBuilder.addFilter(`participants.user_id = ${participantId}`);
+        if (participantIdFilter) queryBuilder.addFilter(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
 
         const location = queryFilters.location?.toString().trim();
         if (location !== undefined) queryBuilder.addFilter(`events.location = '${location}'`);

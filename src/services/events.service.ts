@@ -67,10 +67,7 @@ class EventsService {
         return event;
     }
 
-    public async getEvents(queryFilters: Record<string, string>): Promise<Page<EventQuery>> {
-        const page = queryFilters.page ? parseInt(queryFilters.page.toString().trim()) : 0;
-        const limit = queryFilters.limit ? parseInt(queryFilters.limit.toString().trim()) : 20;        
-
+    public async getEvents(queryFilters: Record<string, string>, page = 0, limit = 20): Promise<Page<EventQuery>> {
         const events = await EventPersistence.getEvents(queryFilters, page, limit);
 
         return {
