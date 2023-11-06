@@ -39,7 +39,8 @@ class User extends Model<IUserAttributes> {
     @Column({
         primaryKey: true,
         allowNull: false,
-        type: DataType.INTEGER
+        type: DataType.INTEGER,
+        autoIncrement: true
     })
     declare id: number;
 
@@ -76,7 +77,6 @@ class User extends Model<IUserAttributes> {
     declare created_at: Date;
 
     @Column({
-        allowNull: false,
         type: DataType.VIRTUAL(DataType.DOUBLE),
         get(this: User) {
             return this.getDataValue('rating');

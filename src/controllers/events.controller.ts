@@ -100,7 +100,7 @@ class EventsController {
         })
     .build())
     @validateBody(Joi.object({
-        sport_id: Joi.number().min(1).required(),
+        sportId: Joi.number().min(1).required(),
         expertise: Joi.number().required(),
         schedule: Joi.date().required(),
         location: Joi.string().required(),
@@ -117,7 +117,7 @@ class EventsController {
             const event = await this.eventsService.createEvent({
                 ownerEmail, sportId, expertise, location, schedule, description, duration, remaining
             });
-            res.status(HTTP_STATUS.CREATED).send({eventId: event});
+            res.status(HTTP_STATUS.CREATED).send({ event });
         } catch (err) {
             next(err);
         }

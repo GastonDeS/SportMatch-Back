@@ -29,10 +29,10 @@ class UserPersistence {
 
     static async getUserDetailByEmail(email: string): Promise<IUserDetail | null> {
         const userDetail = await sequelize.query(`SELECT
-                u.id AS user_id,
+                u.id AS userId,
                 u.firstname,
                 u.lastname,
-                u.phone_number,
+                u.phone_number as phoneNumber,
                 u.email,
                 ARRAY_AGG(DISTINCT (us.sport_id)) AS sports,
                 ARRAY_AGG(DISTINCT ul.location) AS locations,
@@ -50,6 +50,8 @@ class UserPersistence {
             GROUP BY u.id, r.count_ratings;`, { replacements: { email } });
 
         const user = userDetail[0][0] as IUserDetail;
+        user.sports = user.sports.filter((sport) => sport !== null);
+        user.locations = user.locations.filter((location) => location !== null);
         return user;
     }
 }
