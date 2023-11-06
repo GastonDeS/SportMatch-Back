@@ -46,6 +46,8 @@ class EventsController {
         expertise: Joi.string().optional(),
         schedule: Joi.string().optional(),
         date: Joi.string().optional(),
+        page: Joi.number().min(0).optional(),
+        limit: Joi.number().min(1).optional()
     }))
     @HttpRequestInfo("/events", HTTP_METHODS.GET)
     public async getEvents(req: Request, res: Response, next: NextFunction) {
