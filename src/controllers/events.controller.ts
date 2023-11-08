@@ -39,10 +39,10 @@ class EventsController {
     .build())
     @validateQuery(Joi.object({
         participantId: Joi.number().min(1).optional(),
-        sportId: Joi.number().min(1).optional(),
+        sportId: Joi.alternatives([Joi.number().min(1).optional(), Joi.array().items(Joi.number().min(1).optional())]),
         userId: Joi.number().min(1).optional(),
         filterOut: Joi.boolean().optional(),
-        location: Joi.string().optional(),
+        location: Joi.alternatives([Joi.string().optional(), Joi.array().items(Joi.string().optional())]),
         expertise: Joi.string().optional(),
         schedule: Joi.string().optional(),
         date: Joi.string().optional(),

@@ -50,6 +50,8 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
       schema: bodySchema,
     });
   } else {
+    // console.log(joiSchema.describe().keys);
+    return [];
     Object.keys(joiSchema.describe().keys).forEach((key: any) => {
       const joiParameter: Joi.Schema<any> = joiSchema.extract(key);
       const flags = joiParameter.describe().flags as any;

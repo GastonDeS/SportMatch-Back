@@ -62,7 +62,13 @@ class EventPersistence {
 
     if (queryFilters !== undefined) {
         const sportId = queryFilters.sportId?.toString().trim();
-        if (sportId !== undefined) queryBuilder.addFilter(`sport_id = ${sportId}`);
+        if (sportId !== undefined) {
+            const sports = sportId.split(",");
+            if (sports.length > 1) {
+                queryBuilder.addFilter(`sport_id IN (${sports.join(",")})`);
+            } else
+                queryBuilder.addFilter(`sport_id = ${sportId}`);
+        }
 
         const userId = queryFilters.userId?.toString().trim();
         if (userId !== undefined) queryBuilder.addFilter(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
@@ -71,7 +77,13 @@ class EventPersistence {
         if (participantIdFilter) queryBuilder.addFilter(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
 
         const location = queryFilters.location?.toString().trim();
-        if (location !== undefined) queryBuilder.addFilter(`events.location = '${location}'`);
+        if (location !== undefined) {
+            const locations = location.split(",");
+            if (locations.length > 1) {
+                queryBuilder.addFilter(`events.location IN ('${locations.join("','")}')`);
+            } else
+                queryBuilder.addFilter(`events.location = '${location}'`);
+        }
 
         const expertise = queryFilters.expertise?.toString().trim();
         if (expertise !== undefined) queryBuilder.addFilter(`events.expertise = ${expertise}`);
