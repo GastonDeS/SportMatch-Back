@@ -7,9 +7,9 @@ import User from "../models/User.model";
 import { QueryBuilder } from "../utils/postgres.database";
 
 class EventPersistence {
-    static async createEvent(event: IEvent, ownerId: string): Promise<Event> {
+    static async createEvent(event: IEvent): Promise<Event> {
         const newEvent = await Event.create({
-            ownerId: ownerId,
+            ownerId: event.ownerId,
             sportId: event.sportId,
             expertise: event.expertise,
             location: event.location,

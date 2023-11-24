@@ -1,6 +1,6 @@
 
 export interface IEvent {
-    ownerEmail: string,
+    ownerId: string,
     sportId: number,
     expertise: number,
     location: string,

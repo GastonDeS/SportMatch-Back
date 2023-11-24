@@ -6,6 +6,7 @@ import UserSportPersistence from "../database/persistence/userSport.persistense"
 import RatingPersistence from "../database/persistence/rating.persistence";
 import EventPersistence from "../database/persistence/event.persistence";
 import NotFoundException from "../exceptions/notFound.exception";
+import { Transaction } from "sequelize";
 
 
 class UsersService {
@@ -23,8 +24,8 @@ class UsersService {
         return await UserPersistence.getAllUsers();
     }
 
-    public async getUserByEmail(email: string): Promise<IUserDetail> {
-        const user = await UserPersistence.getUserDetailByEmail(email);
+    public async getUserDetailById(id: string): Promise<IUserDetail> {
+        const user = await UserPersistence.getUserDetailById(id);
         if (!user) throw new NotFoundException("User");
 
         return user;
@@ -52,28 +53,27 @@ class UsersService {
       }
       
 
-    public async createUser(email: string, firstname: string, lastname: string, phone_number: string): Promise<any> {
-        const user = await UserPersistence.createUser({ email, firstname, lastname, phone_number });
-        return user;
+    public async createUser(email: string, firstname: string, lastname: string, phone_number: string, birthdate: string, transaction: Transaction): Promise<User> {
+        return await UserPersistence.createUser({ email, firstname, lastname, phone_number, birthdate}, transaction);
     }
 
-    public async updateUser(userId: string, email: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<void> {
-        if (phone_number) await this.updatePhoneNumber(userId, email, phone_number);
-        if (locations) await this.updateLocations(userId, email, locations);
-        if (sports) await this.updateSports(userId, email, sports);
+    public async updateUser(userId: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<void> {
+        if (phone_number) await this.updatePhoneNumber(userId, phone_number);
+        if (locations) await this.updateLocations(userId, locations);
+        if (sports) await this.updateSports(userId, sports);
     }
 
-    private async updatePhoneNumber(userId: string, email: string, phone_number: string): Promise<User> {
-        const updatedUser = await UserPersistence.updatePhoneNumber(+userId, email, phone_number);        
+    private async updatePhoneNumber(userId: string, phone_number: string): Promise<User> {
+        const updatedUser = await UserPersistence.updatePhoneNumber(+userId, phone_number);        
 
         return updatedUser;
     }
 
-    private async updateLocations(userId: string, email: string, locations: string[]): Promise<void> {
+    private async updateLocations(userId: string, locations: string[]): Promise<void> {
         const newLocations = UserLocationPersistence.updateUserLocations(userId, locations); // TODO: send email? or update token to have email
     }
 
-    private async updateSports(userId: string, email: string, sports: string[]): Promise<void> {
+    private async updateSports(userId: string, sports: string[]): Promise<void> {
         const newSports = await UserSportPersistence.updateUserSports(userId, sports);
     }
 }

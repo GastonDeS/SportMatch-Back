@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { urlencoded } from 'body-parser';
 import cors from 'cors';
 import EventsController from '../controllers/events.controller';
-import cognitoUserMiddleware from '../middlewares/cognitoUser.middleware';
+import userAuthMiddleware from '../middlewares/jwt.middleware';
 
 export default class EventsRoutes {
     public router: Router = Router({ mergeParams: true });
@@ -19,12 +19,12 @@ export default class EventsRoutes {
 
         this.router.get('/', this.controller.getEvents);
         this.router.get('/:eventId', this.controller.getEventById);
-        this.router.put('/:eventId/participants', cognitoUserMiddleware, this.controller.addParticipant);
-        this.router.delete('/:eventId/participants', cognitoUserMiddleware, this.controller.removeParticipant);
-        this.router.put('/:eventId/owner/participants', cognitoUserMiddleware, this.controller.acceptParticipant); 
+        this.router.put('/:eventId/participants', userAuthMiddleware, this.controller.addParticipant);
+        this.router.delete('/:eventId/participants', userAuthMiddleware, this.controller.removeParticipant);
+        this.router.put('/:eventId/owner/participants', userAuthMiddleware, this.controller.acceptParticipant); 
         this.router.get('/:eventId/owner/participants', this.controller.getParticipants);
-        this.router.delete('/:eventId/owner/participants', cognitoUserMiddleware, this.controller.ownerRemoveParticipant);
+        this.router.delete('/:eventId/owner/participants', userAuthMiddleware, this.controller.ownerRemoveParticipant);
 
-        this.router.post('/', cognitoUserMiddleware, this.controller.createEvent);
+        this.router.post('/', userAuthMiddleware, this.controller.createEvent);
     }
 }

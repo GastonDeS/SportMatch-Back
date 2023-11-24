@@ -111,11 +111,11 @@ class EventsController {
     @HttpRequestInfo("/events", HTTP_METHODS.POST)
     public async createEvent(req: Request, res: Response, next: NextFunction) {
         const { sportId, expertise, description, schedule, duration, location, remaining } = req.body;
-        const ownerEmail = req.user.email;
+        const ownerId = req.user.id;
 
         try {
             const event = await this.eventsService.createEvent({
-                ownerEmail, sportId, expertise, location, schedule, description, duration, remaining
+                ownerId, sportId, expertise, location, schedule, description, duration, remaining
             });
             res.status(HTTP_STATUS.CREATED).send({ event });
         } catch (err) {
@@ -138,10 +138,10 @@ class EventsController {
     }))
     @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.PUT)
     public async addParticipant(req: Request, res: Response, next: NextFunction) {
-        const email = req.user.email;
+        const participantId = req.user.id;
         const eventId = req.params.eventId;
         try {
-            await this.eventsService.addParticipant(eventId, email);
+            await this.eventsService.addParticipant(eventId, participantId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -164,10 +164,10 @@ class EventsController {
     }))
     @HttpRequestInfo("/events/:eventId/participants", "delete")
     public async removeParticipant(req: Request, res: Response, next: NextFunction) {
-        const email = req.user.email;
+        const participantId = req.user.id;
         const eventId = req.params.eventId;
         try {
-            await this.eventsService.removeParticipant(eventId, email);
+            await this.eventsService.removeParticipant(eventId, participantId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -188,15 +188,15 @@ class EventsController {
         eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        email: Joi.string().email().required(),
+        participantId: Joi.string().email().required(),
     }))
-    @HttpRequestInfo("/events//:eventId/owner/participants", "delete")
+    @HttpRequestInfo("/events/:eventId/owner/participants", "delete")
     public async ownerRemoveParticipant(req: Request, res: Response, next: NextFunction) {
-        const email = req.body.email;
-        const owner = req.user.email;
+        const participantId = req.body.participantId;
+        const ownerId = req.user.id;
         const eventId = req.params.eventId;
         try {
-            await this.eventsService.removeParticipant(eventId, email, owner);
+            await this.eventsService.removeParticipant(eventId, participantId, ownerId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -217,16 +217,16 @@ class EventsController {
         eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        email: Joi.string().email().required(),
+        participantId: Joi.string().email().required(),
     }))
     @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.PUT)
     public async acceptParticipant(req: Request, res: Response, next: NextFunction) {
-        const email = req.body.email;
-        const ownerEmail = req.user.email;
+        const participantId = req.body.participantId;
+        const ownerId = req.user.id;
         const eventId = parseInt(req.params.eventId);
 
         try {
-            await this.eventsService.acceptParticipant(eventId, email, ownerEmail);
+            await this.eventsService.acceptParticipant(eventId, participantId, ownerId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);

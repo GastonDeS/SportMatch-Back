@@ -149,7 +149,6 @@ describe("Event Service test", () => {
             const eventsService = EventsService.getInstance();
             const email = "test@example.com";
         
-            UserPersistence.getUserByEmail.mockResolvedValue(fakeUser);
             EventPersistence.getEventById.mockResolvedValue(fakeEvent);
             
             await eventsService.addParticipant("1", email);
@@ -161,43 +160,20 @@ describe("Event Service test", () => {
           // Arrange
           const eventsService = EventsService.getInstance(); // Create an instance of the EventsService
           const eventId = "1";
-          const email = "test@example.com";
+          const participantId = "1";
       
           // Mock UserPersistence.getUserByEmail to return a fake user
-          UserPersistence.getUserByEmail.mockResolvedValue(fakeUser);
+          UserPersistence.getUserDetailById.mockResolvedValue(fakeUser);
       
           // Mock ParticipantPersistence.removeParticipant to return true, indicating success
           ParticipantPersistence.removeParticipant.mockResolvedValue(true);
       
           // Act
-          await eventsService.removeParticipant(eventId, email);
+          await eventsService.removeParticipant(eventId, participantId);
       
           // Assert
-          expect(UserPersistence.getUserByEmail).toHaveBeenCalledWith(email);
           expect(ParticipantPersistence.removeParticipant).toHaveBeenCalledWith(eventId, fakeUser.id.toString());
           // Add additional assertions based on your implementation
-        });
-      
-        it("should throw an error when user not found", async () => {
-          // Arrange
-          const eventsService = EventsService.getInstance(); // Create an instance of the EventsService
-          const eventId = "1";
-          const email = "nonexistent@example.com"; // An email that doesn't exist
-      
-          // Mock UserPersistence.getUserByEmail to return null, indicating user not found
-          UserPersistence.getUserByEmail.mockResolvedValue(null);
-      
-          // Act and Assert
-          try {
-            await eventsService.removeParticipant(eventId, email);
-            // If no error is thrown, the test should fail
-          } catch (error) {
-            // Verify that the error is of the correct type and has the expected properties
-            expect(error).toBeInstanceOf(GenericException);
-            expect(error.message).toEqual("User not found");
-            expect(error.status).toEqual(404);
-            expect(error.internalStatus).toEqual("NOT_FOUND");
-          }
         });
       
         it("should throw an error when participant not found", async () => {
@@ -207,7 +183,7 @@ describe("Event Service test", () => {
           const email = "test@example.com";
       
           // Mock UserPersistence.getUserByEmail to return a fake user
-          UserPersistence.getUserByEmail.mockResolvedValue(fakeUser);
+          UserPersistence.getUserDetailById.mockResolvedValue(fakeUser);
       
           // Mock ParticipantPersistence.removeParticipant to return false, indicating participant not found
           ParticipantPersistence.removeParticipant.mockResolvedValue(false);
@@ -233,10 +209,7 @@ describe("Event Service test", () => {
             const ownerEmail = "owner@example.com";
         
             // Mock UserPersistence.getUserByEmail to return a fake user for the participant
-            UserPersistence.getUserByEmail.mockResolvedValueOnce(fakeUser);
-        
-            // Mock UserPersistence.getUserByEmail to return a fake user for the owner
-            UserPersistence.getUserByEmail.mockResolvedValueOnce(fakeUser);
+            UserPersistence.getUserDetailById.mockResolvedValueOnce(fakeUser);
         
             // Mock EventPersistence.getEventById to return a fake event
             EventPersistence.getEventById.mockResolvedValue(fakeEvent);
@@ -245,12 +218,9 @@ describe("Event Service test", () => {
             ParticipantPersistence.removeParticipant.mockResolvedValue(true);
         
             // Act
-            await eventsService.removeParticipant(eventId, email, ownerEmail);
+            await eventsService.removeParticipant(eventId, fakeUser.id.toString(), "1");
         
             // Assert
-            expect(UserPersistence.getUserByEmail).toHaveBeenCalledWith(email);
-            expect(UserPersistence.getUserByEmail).toHaveBeenCalledWith(ownerEmail);
-            expect(EventPersistence.getEventById).toHaveBeenCalledWith(eventId);
             expect(ParticipantPersistence.removeParticipant).toHaveBeenCalledWith(eventId, fakeUser.id.toString());
             // Add additional assertions based on your implementation
           });
@@ -280,7 +250,7 @@ describe("Event Service test", () => {
           const eventsService = EventsService.getInstance();
       
           // Mock the UserPersistence.getUserByEmail function to return the owner
-          UserPersistence.getUserByEmail.mockResolvedValue(fakeUser);
+          UserPersistence.getUserDetailById.mockResolvedValue(fakeUser);
       
           // Mock the EventPersistence.createEvent function to return the created event
           EventPersistence.createEvent.mockResolvedValue(fakeEvent);
@@ -289,7 +259,7 @@ describe("Event Service test", () => {
           const createdEvent = await eventsService.createEvent(fakeEvent);
       
             
-          expect(EventPersistence.createEvent).toHaveBeenCalledWith(fakeEvent, "1");
+          expect(EventPersistence.createEvent).toHaveBeenCalledWith(fakeEvent);
           expect(createdEvent).toEqual(fakeEvent);
         });
       

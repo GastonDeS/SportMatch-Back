@@ -1,3 +1,4 @@
+import { Transaction } from "sequelize";
 import sequelize from "../connection";
 import Rating from "../models/Rating.model";
 import User, { IUserAttributes, IUserDetail } from "../models/User.model";
@@ -6,8 +7,8 @@ import UserSport from "../models/UserSport.model";
 
 class UserPersistence {
 
-    static async updatePhoneNumber(userId: number, email: string, phoneNumber: string): Promise<User> {
-        const user = await User.update({ phone_number: phoneNumber }, { where: { id: userId, email }, returning: true });
+    static async updatePhoneNumber(userId: number, phoneNumber: string): Promise<User> {
+        const user = await User.update({ phone_number: phoneNumber }, { where: { id: userId }, returning: true });
 
         return user[1][0];
     }
@@ -17,8 +18,8 @@ class UserPersistence {
         return users;
     }
 
-    static async createUser(user: IUserAttributes): Promise<User> {
-        const newUser = await User.create(user);
+    static async createUser(user: IUserAttributes, transaction: Transaction): Promise<User> {
+        const newUser = await User.create(user, { transaction });
         return newUser;
     }
 
@@ -27,12 +28,13 @@ class UserPersistence {
         return user;
     }
 
-    static async getUserDetailByEmail(email: string): Promise<IUserDetail | null> {
+    static async getUserDetailById(id: string): Promise<IUserDetail | null> {
         const userDetail = await sequelize.query(`SELECT
                 u.id AS userId,
                 u.firstname,
                 u.lastname,
                 u.phone_number as phoneNumber,
+                u.birthdate as birthdate,
                 u.email,
                 ARRAY_AGG(DISTINCT (us.sport_id)) AS sports,
                 ARRAY_AGG(DISTINCT ul.location) AS locations,
@@ -46,8 +48,8 @@ class UserPersistence {
                 FROM ratings
                 GROUP BY rated
             ) r ON u.id = r.rated
-            WHERE u.email = :email
-            GROUP BY u.id, r.count_ratings;`, { replacements: { email } });
+            WHERE u.id = :id
+            GROUP BY u.id, r.count_ratings;`, { replacements: { id } });
 
         const user = userDetail[0][0] as IUserDetail;
         user.sports = user.sports.filter((sport) => sport !== null);

@@ -46,11 +46,11 @@ describe("User Service test", () => {
         });
 
         it("get user by email", async () => {
-            UserPersistence.getUserDetailByEmail.mockResolvedValueOnce(fullUser);
+            UserPersistence.getUserDetailById.mockResolvedValueOnce(fullUser);
 
             const userService = UsersService.getInstance();
             
-            const user = await userService.getUserByEmail("gdeschant@itba.edu.ar");
+            const user = await userService.getUserDetailById(fullUser.user_id);
             expect(user).toBeDefined();
             expect(user).toEqual(fullUser);
         });

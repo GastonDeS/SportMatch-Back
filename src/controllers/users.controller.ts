@@ -36,7 +36,7 @@ class UsersController {
     public async getUsers(req: Request, res: Response, next: NextFunction) {
         try {
             if (req.query.email) {
-                const user = await this.usersService.getUserByEmail(req.query.email as string);
+                const user = await this.usersService.getUserDetailById(req.query.id as string);
                 res.status(HTTP_STATUS.OK).send(user);
             } else {
                 const users = await this.usersService.getUsers();
@@ -64,7 +64,7 @@ class UsersController {
     @HttpRequestInfo("/users/:userId/rate", HTTP_METHODS.POST)
     public async rateUser(req: Request, res: Response, next: NextFunction) {
         const { rating, eventId } = req.body;
-        const rater = req.user.email;
+        const rater = req.user.id;
         const rated = req.params.userId;
 
         try {
@@ -74,27 +74,6 @@ class UsersController {
             next(err);
         }
     }
-
-    @document(SwaggerEndpointBuilder.create()
-        .responses({
-            "200": {
-                description: "OK",
-            }
-        })
-        .build()
-    )
-    @HttpRequestInfo("/users", HTTP_METHODS.POST)
-    public async createUser(req: Request, res: Response, next: NextFunction) {
-        const { email, firstName, lastName, phoneNumber } = req.user;
-
-        try {
-            const user = await this.usersService.createUser(email, firstName, lastName, phoneNumber);
-            res.status(HTTP_STATUS.OK).send(user);
-        } catch (err) {
-            next(err);
-        }
-    }
-
 
     @document(SwaggerEndpointBuilder.create()
         .responses({
@@ -114,12 +93,14 @@ class UsersController {
     }))
     @HttpRequestInfo("/users/:userId", HTTP_METHODS.PUT)
     public async updateUser(req: Request, res: Response, next: NextFunction) {
-        const userId = req.params.userId;
+        const userIdPath = req.params.userId;
         const { phone_number, locations, sports } = req.body;
-        const email = req.user.email;
+        const userId = req.user.id;
 
         try {
-            await this.usersService.updateUser(userId, email, phone_number, locations, sports);
+            if (userIdPath !== userId) throw new Error("User can't update another user");
+
+            await this.usersService.updateUser(userId, phone_number, locations, sports);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -138,12 +119,10 @@ class UsersController {
     }
 
     public async updateUserImage(req: Request, res: Response, next: NextFunction) {
-        const email = req.user.email;
+        const userId = req.user.id;
         
         try {
-            const user = await this.usersService.getUserByEmail(email);
-
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(`userid:${user.user_id}`);
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(`userid:${userId}`);
             res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
         } catch (err) {
             next(err);

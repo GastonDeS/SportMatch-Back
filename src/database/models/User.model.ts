@@ -21,6 +21,7 @@ export interface IUserAttributes {
     firstname: string;
     lastname: string;
     phone_number: string;
+    birthdate: string;
     email: string;
     rating?: number;
     count?: number;
@@ -69,6 +70,12 @@ class User extends Model<IUserAttributes> {
         type: DataType.STRING(256)
     })
     declare email: string;
+
+    @Column({
+        allowNull: false,
+        type: DataType.STRING(10)
+    })
+    declare birthdate: string;
 
     @UpdatedAt
     declare updated_at: Date;

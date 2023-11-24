@@ -19,41 +19,31 @@ class EventsService {
         return this.instance;
     }
 
-    public async addParticipant(eventId: string, email: string): Promise<Participant> {
+    public async addParticipant(eventId: string, participantId: string): Promise<Participant> {
         const event = await EventPersistence.getEventById(eventId);
         if (!event) throw new NotFoundException("Event");
-        const user = await UserPersistence.getUserByEmail(email);
-        if (!user) throw new NotFoundException("User");
 
-        const participant = await ParticipantPersistence.createParticipant(eventId.toString(), user.id.toString());
+        const participant = await ParticipantPersistence.createParticipant(eventId.toString(), participantId);
         return participant;
     }
 
-    public async removeParticipant(eventId: string, email: string, ownerEmail?: string): Promise<void> {
-        const user = await UserPersistence.getUserByEmail(email);
-        if (!user) throw new NotFoundException("User");
-        if (ownerEmail) {
-            const owner = await UserPersistence.getUserByEmail(ownerEmail);
-            if (!owner) throw new NotFoundException("Owner")
+    public async removeParticipant(eventId: string, participantId: string, ownerId?: string): Promise<void> {
+        if (ownerId) {
             const event = await EventPersistence.getEventById(eventId);
             if (!event) throw new NotFoundException("Event");
-            if (event.ownerId !== owner.id) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
+            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
         }
-        const removed = await ParticipantPersistence.removeParticipant(eventId.toString(), user.id.toString());
+        const removed = await ParticipantPersistence.removeParticipant(eventId.toString(), participantId);
         if (!removed) throw new NotFoundException("Participant");
     }
 
-    public async acceptParticipant(eventId: number, email: string, ownerEmail: string): Promise<void> {
-        const user = await UserPersistence.getUserByEmail(email);
-        if (!user) throw new NotFoundException("User");
-        if (ownerEmail) {
-            const owner = await UserPersistence.getUserByEmail(ownerEmail);
-            if (!owner) throw new NotFoundException("Owner")
+    public async acceptParticipant(eventId: number, participantId: string, ownerId: string): Promise<void> {
+        if (ownerId) {
             const event = await EventPersistence.getEventById(eventId.toString());
             if (!event) throw new NotFoundException("Event");
-            if (event.ownerId !== owner.id) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
+            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
         }
-        await ParticipantPersistence.updateStatus(eventId.toString(), user.id.toString(), true);
+        await ParticipantPersistence.updateStatus(eventId.toString(), participantId, true);
     }
 
     public async getParticipants(eventId: number): Promise<any> {
@@ -78,10 +68,7 @@ class EventsService {
     }
 
     public async createEvent(event: IEvent): Promise<Event> {
-        const owner = await UserPersistence.getUserByEmail(event.ownerEmail);
-        if (!owner) throw new NotFoundException("Owner" );
-
-        return await EventPersistence.createEvent(event, owner.id.toString());
+        return await EventPersistence.createEvent(event);
     }
 }
 

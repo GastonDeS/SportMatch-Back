@@ -4,11 +4,11 @@ import Rating from "../models/Rating.model";
 import { UniqueConstraintError } from "sequelize";
 
 class RatingPersistence {
-    static async rate(ratedEmail: string, rater: string, rating: number, eventId: string): Promise<void> {
+    static async rate(rated: string, rater: string, rating: number, eventId: string): Promise<void> {
         try {
             await Rating.create({
                 rater: rater,
-                rated: ratedEmail,
+                rated: rated,
                 rating: rating,
                 eventId: eventId
             });

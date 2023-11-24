@@ -8,6 +8,7 @@ import UsersRoutes from './routes/users.routes';
 import EventsRoutes from './routes/events.routes';
 import initializeSwagger from './utils/swaggerDocumentation/swagger.main';
 import './database/connection';
+import AuthRoutes from './routes/auth.routes';
 
 class App {
     public app: Application;
@@ -57,6 +58,7 @@ class App {
         this.app.use('/health', new HealthRoutes().router);
         this.app.use('/users', new UsersRoutes().router);
         this.app.use('/events', new EventsRoutes().router);
+        this.app.use('/auth', new AuthRoutes().router);
     }
 
     private initializeSwaggerApp(): void {
