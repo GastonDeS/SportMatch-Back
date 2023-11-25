@@ -7,6 +7,7 @@ import GenericException from "../exceptions/generic.exception";
 import NotFoundException from "../exceptions/notFound.exception";
 import Bluebird from "bluebird";
 import UserPersistence from "../database/persistence/user.persistence";
+import { ValidationError } from "sequelize";
 
 class AuthService {
     private static instance: AuthService;
@@ -40,6 +41,10 @@ class AuthService {
         } catch (err) {
             console.log(err);
             if (transaction) await transaction.rollback();
+            if (err.errors && err.errors[0]) {
+                const error = err.errors[0] as ValidationError;
+                throw new GenericException({status: 409, message: error.message, internalStatus: "VALIDATION_ERROR"});
+            }
             throw err;
         }
     }
