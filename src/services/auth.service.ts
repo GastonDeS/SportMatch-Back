@@ -6,6 +6,7 @@ import Crypto from "crypto";
 import GenericException from "../exceptions/generic.exception";
 import NotFoundException from "../exceptions/notFound.exception";
 import Bluebird from "bluebird";
+import UserPersistence from "../database/persistence/user.persistence";
 
 class AuthService {
     private static instance: AuthService;
@@ -44,13 +45,15 @@ class AuthService {
     }
 
     login = async (email: string, password: string) => {
-        const user = await AuthPersistence.getAuthByEmail(email);
-        if (!user) throw new NotFoundException('User');
+        const userAuth = await AuthPersistence.getAuthByEmail(email);
+        if (!userAuth) throw new NotFoundException('User');
 
-        if (!validatePassword(password, user.password!)) throw new NotFoundException('User');
+        if (!validatePassword(password, userAuth.password!)) throw new NotFoundException('User');
 
-        const accessToken = this.signAccessToken(user.id.toString(), user.email);
-        return accessToken;
+        const user = UserPersistence.getUserByEmail(email);
+
+        const accessToken = this.signAccessToken(userAuth.id.toString(), userAuth.email);
+        return {user, accessToken};
     }
 
     verifyToken = (token: string) : string | jwt.JwtPayload=> {

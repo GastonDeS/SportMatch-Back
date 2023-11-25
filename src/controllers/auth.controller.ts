@@ -36,9 +36,9 @@ class AuthController {
     @HttpRequestInfo("/auth", "GET")
     public async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const accessToken = await this.authService.login(req.userBasic.email, req.userBasic.password);
-            res.header("c-api-key", accessToken);
-            res.status(HTTP_STATUS.OK).send();
+            const user = await this.authService.login(req.userBasic.email, req.userBasic.password);
+            res.header("c-api-key", user.accessToken);
+            res.status(HTTP_STATUS.OK).send({user: user.user});
         } catch (err) {
             next(err);
         }
