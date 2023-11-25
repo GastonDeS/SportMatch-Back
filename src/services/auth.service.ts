@@ -51,9 +51,11 @@ class AuthService {
         if (!validatePassword(password, userAuth.password!)) throw new NotFoundException('User');
 
         const user = await UserPersistence.getUserByEmail(email);
+        if (!user) throw new NotFoundException('User');
+        const userDetail = await UserPersistence.getUserDetailById(user!.id.toString());
 
         const accessToken = this.signAccessToken(userAuth.id.toString(), userAuth.email);
-        return {user, accessToken};
+        return {userDetail, accessToken};
     }
 
     verifyToken = (token: string) : string | jwt.JwtPayload=> {

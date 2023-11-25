@@ -38,7 +38,7 @@ class AuthController {
         try {
             const user = await this.authService.login(req.userBasic.email, req.userBasic.password);
             res.header("c-api-key", user.accessToken);
-            res.status(HTTP_STATUS.OK).send({user: user.user});
+            res.status(HTTP_STATUS.OK).send({user: user.userDetail});
         } catch (err) {
             next(err);
         }
