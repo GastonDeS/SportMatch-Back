@@ -50,7 +50,7 @@ class AuthService {
 
         if (!validatePassword(password, userAuth.password!)) throw new NotFoundException('User');
 
-        const user = UserPersistence.getUserByEmail(email);
+        const user = await UserPersistence.getUserByEmail(email);
 
         const accessToken = this.signAccessToken(userAuth.id.toString(), userAuth.email);
         return {user, accessToken};
