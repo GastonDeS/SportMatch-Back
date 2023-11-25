@@ -7,7 +7,7 @@ import GenericException from "../exceptions/generic.exception";
 import NotFoundException from "../exceptions/notFound.exception";
 import Bluebird from "bluebird";
 import UserPersistence from "../database/persistence/user.persistence";
-import { ValidationError } from "sequelize";
+import { ValidationErrorItem } from "sequelize";
 
 class AuthService {
     private static instance: AuthService;
@@ -42,8 +42,11 @@ class AuthService {
             console.log(err);
             if (transaction) await transaction.rollback();
             if (err.errors && err.errors[0]) {
-                const error = err.errors[0] as ValidationError;
-                throw new GenericException({status: 409, message: error.message, internalStatus: "VALIDATION_ERROR"});
+                const error = err.errors[0] as ValidationErrorItem;
+                if (error.type == 'unique violation') {
+                    throw new GenericException({status: 409, message: `${error.path}`, internalStatus: "CONFLICT"});
+                }
+                throw new GenericException({status: 400, message: error.message, internalStatus: "VALIDATION_ERROR"});
             }
             throw err;
         }
