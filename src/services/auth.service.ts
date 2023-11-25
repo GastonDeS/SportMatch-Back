@@ -60,9 +60,9 @@ class AuthService {
 
         const user = await UserPersistence.getUserByEmail(email);
         if (!user) throw new NotFoundException('User');
-        const userDetail = await UserPersistence.getUserDetailById(user!.id.toString());
+        const userDetail = await UserPersistence.getUserDetailById(user.id.toString());
 
-        const accessToken = this.signAccessToken(userAuth.id.toString(), userAuth.email);
+        const accessToken = this.signAccessToken(user.id.toString(), userAuth.email);
         return {userDetail, accessToken};
     }
 
