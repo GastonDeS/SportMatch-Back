@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import EventsService from "../services/events.service";
 import { HTTP_METHODS, HTTP_STATUS } from "../constants/http.constants";
-import { HttpRequestInfo, validateBody, validateParams, validateQuery } from "../middlewares/validation.middleware";
+import { HttpRequestInfo, JoiEnum, validateBody, validateParams, validateQuery } from "../middlewares/validation.middleware";
 import { autobind } from "core-decorators";
 import Joi from "joi";
 import { document } from "../utils/swaggerDocumentation/annotations";
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
+import { ParticipantStatus } from "../database/models/Participant.model";
 
 @autobind
 class EventsController {
@@ -246,12 +247,16 @@ class EventsController {
     @validateParams(Joi.object({
         eventId: Joi.number().min(1).required()
     }))
+    @validateQuery(Joi.object({
+        status: JoiEnum(ParticipantStatus).optional()
+    }))
     @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.GET)
     public async getParticipants(req: Request, res: Response, next: NextFunction) {
         const eventId = parseInt(req.params.eventId);
+        const status = req.query.status ? req.query.status === ParticipantStatus.ACCEPTED : undefined;
 
         try {
-            const participants = await this.eventsService.getParticipants(eventId);
+            const participants = await this.eventsService.getParticipants(eventId, status);
             res.status(HTTP_STATUS.OK).send(participants);
         } catch (err) {
             next(err);

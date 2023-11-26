@@ -14,6 +14,11 @@ export interface IParticipantDetail {
     is_rated: number // TODO: wtf make this boolean talk to @naso
 }
 
+export enum ParticipantStatus {
+    PENDING = "pending",
+    ACCEPTED = "accepted",
+}
+
 @Table({
     timestamps: true,
     tableName: 'participants',

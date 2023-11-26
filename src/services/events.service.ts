@@ -46,8 +46,14 @@ class EventsService {
         await ParticipantPersistence.updateStatus(eventId.toString(), participantId, true);
     }
 
-    public async getParticipants(eventId: number): Promise<any> {
-        return await ParticipantPersistence.getParticipantsDetailsByEventId(eventId.toString());
+    public async getParticipants(eventId: number, status?: boolean): Promise<any> {
+        const participants = await ParticipantPersistence.getParticipantsDetailsByEventId(eventId.toString());
+
+        if (status !== undefined) {
+            return participants.filter((p: any) => p.participant_status === status);
+        }
+
+        return participants;
     }
 
     public async getEventById(eventId: string): Promise<IEventDetail> {

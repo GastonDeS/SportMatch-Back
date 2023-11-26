@@ -8,8 +8,6 @@ import { HTTP_METHODS, HTTP_PARAMETERS } from '../constants/http.constants';
 // this function is weird because of the way the enum is defined in typescript
 export const JoiEnum = (enumObject: any) => {
     const enumValues = Object.values(enumObject);
-    if (enumValues[0] !== enumObject[enumValues[0] as any])
-        return Joi.object().valid(...enumValues.splice(enumValues.length / 2));
     return Joi.object().valid(...enumValues);
 }
 
