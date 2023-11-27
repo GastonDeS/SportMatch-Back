@@ -55,7 +55,7 @@ class UsersController {
         })
     .build())
     @validateBody(Joi.object({
-        rating: Joi.number().min(1).max(5).required(),
+        rating: Joi.number().min(1).max(5).raw().required(),
         eventId: Joi.number().min(1).required()
     }))
     @validateParams(Joi.object({

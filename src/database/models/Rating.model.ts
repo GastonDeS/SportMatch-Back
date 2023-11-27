@@ -40,6 +40,12 @@ class Rating extends Model {
     })
     declare eventId: number;
 
+    @Column({
+        allowNull: false,
+        type: DataType.INTEGER
+    })
+    declare rating: number;
+
     @BelongsTo(() => Event)
     declare event: Event;
 
