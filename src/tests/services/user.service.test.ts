@@ -78,8 +78,8 @@ describe("User Service test", () => {
                 duration: 60, // Event duration in minutes
                 participants: [
                     { userId: 1 },
-                    { userId: 2 },
                 ],
+                ownerId: 2,
             });
     
             const userService = UsersService.getInstance();

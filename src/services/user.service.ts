@@ -40,6 +40,15 @@ class UsersService {
             if (event.schedule.getTime() + event.duration * 60000 > Date.now()) throw new GenericException({ message: "Event is not rateable", status: 400, internalStatus: "BAD_REQUEST"});
 
             // check that user can rate
+            console.log("event participants", event.participants.map((p) => p.userId));
+            console.log("event owner", event.ownerId);
+            console.log("rated", rated);
+            console.log("rater", rater);
+            console.log("participants count", event.participants.filter((participant) => participant.userId === +rated ||
+                participant.userId === +rater).length);
+            console.log("owner count", (event.ownerId === +rated || event.ownerId === +rater) ? 1 : 0);
+
+
             if ((event.participants.filter((participant) => participant.userId === +rated ||
               participant.userId === +rater).length + ((event.ownerId === +rated || event.ownerId === +rater) ? 1 : 0)) !== 2)
                 throw new GenericException({ message: "User can't rate this event", status: 400, internalStatus: "BAD_REQUEST"});
