@@ -189,7 +189,7 @@ class EventsController {
         eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        participantId: Joi.string().email().required(),
+        participantId: Joi.number().required(),
     }))
     @HttpRequestInfo("/events/:eventId/owner/participants", "delete")
     public async ownerRemoveParticipant(req: Request, res: Response, next: NextFunction) {
@@ -218,7 +218,7 @@ class EventsController {
         eventId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        participantId: Joi.string().email().required(),
+        participantId: Joi.number().required(),
     }))
     @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.PUT)
     public async acceptParticipant(req: Request, res: Response, next: NextFunction) {

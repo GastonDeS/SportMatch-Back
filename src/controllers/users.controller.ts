@@ -30,12 +30,12 @@ class UsersController {
         })
     .build())
     @validateQuery(Joi.object({
-        email: Joi.string().email().optional(),
+        id: Joi.number().optional(),
     }))
     @HttpRequestInfo("/users", HTTP_METHODS.GET)
     public async getUsers(req: Request, res: Response, next: NextFunction) {
         try {
-            if (req.query.email) {
+            if (req.query.id) {
                 const user = await this.usersService.getUserDetailById(req.query.id as string);
                 res.status(HTTP_STATUS.OK).send(user);
             } else {
