@@ -23,7 +23,8 @@ class ParticipantPersistence {
     }
 
     static async getParticipantsDetailsByEventId(eventId: string): Promise<IParticipantDetail[]> {
-        const participants = await sequelize.query(`SELECT participants.user_id,
+        const participants = await sequelize.query(`SELECT 
+                    participants.user_id,
                     users.firstname                     as firstname,
                     users.lastname                      as lastname,
                     users.email                         as email,

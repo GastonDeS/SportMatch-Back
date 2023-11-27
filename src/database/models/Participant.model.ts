@@ -49,6 +49,7 @@ class Participant extends Model {
     declare status: boolean;
 
     @ForeignKey(() => Event)
+    @BelongsTo(() => Event, { as: 'participants'})
     @Column({
         allowNull: false,
         type: DataType.INTEGER,

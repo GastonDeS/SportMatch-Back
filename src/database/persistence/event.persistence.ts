@@ -178,7 +178,7 @@ class EventPersistence {
     }
 
     static async getEventByIdWithParticipants(id: string): Promise<Event | null > {
-        return await Event.findOne({ where: { id: id }, include: { model: Participant, attributes: ['user_id', 'status'] }});
+        return await Event.findOne({ where: { id: id }, include: { model: Participant, attributes: ['userId', 'status'] }});
     }
 }
 
