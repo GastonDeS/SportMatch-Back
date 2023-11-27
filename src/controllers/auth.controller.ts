@@ -23,11 +23,15 @@ class AuthController {
         phoneNumber: Joi.string().required(),
         birthdate: 
             Joi.custom((value, helpers) => {
-                const dateArray = value.split("/");
-                const newDateF = `${dateArray[1]}/${dateArray[0]}/${dateArray[2]}`
-                const date = new Date(newDateF);
-                if (!(date instanceof Date) || isNaN(date.valueOf()))
+                try {
+                    const dateArray = value.split("/");
+                    const newDateF = `${dateArray[1]}/${dateArray[0]}/${dateArray[2]}`
+                    const date = new Date(newDateF);
+                    if (!(date instanceof Date) || isNaN(date.valueOf()))
+                        throw new Error("birthdate is not a valid date (DD/MM/YYYY)");
+                } catch (err) {
                     throw new Error("birthdate is not a valid date (DD/MM/YYYY)");
+                }
             }).required()
     }))
     @HttpRequestInfo("/auth", "POST")
