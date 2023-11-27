@@ -35,7 +35,13 @@ const validationHelper = (schema: Joi.ObjectSchema, source: HTTP_PARAMETERS) => 
             const { error } = schema.validate(req[(source === HTTP_PARAMETERS.PATH)? "params": source]);
             if (error) {
                 next(new GenericException({ 
-                    message: error.details.map((e: any) => e.message.replace(/"/g, '')).join(', '),
+                    message: error.details.map((e: any) => {
+                        if (e.type === 'any.custom') {
+                            const message = e.message as string;
+                            return message.substring(message.indexOf('because ') + 8);
+                        }
+                        return e.message.replace(/"/g, '')
+                    }).join(', '),
                     status: 400,
                     internalStatus: "BAD_REQUEST"
                 }));

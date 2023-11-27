@@ -21,12 +21,21 @@ class AuthController {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         phoneNumber: Joi.string().required(),
-        birthdate: Joi.string().required(),
+        birthdate: 
+            Joi.custom((value, helpers) => {
+                const dateArray = value.split("/");
+                const newDateF = `${dateArray[1]}/${dateArray[0]}/${dateArray[2]}`
+                const date = new Date(newDateF);
+                if (!(date instanceof Date) || isNaN(date.valueOf()))
+                    throw new Error("birthdate is not a valid date (DD/MM/YYYY)");
+            }).required()
     }))
     @HttpRequestInfo("/auth", "POST")
     public async createAuth(req: Request, res: Response, next: NextFunction) {
+        const email: string = req.body.email;
+        
         try {
-            await this.authService.createAuth(req.body.email, req.body.password, req.body.firstName, req.body.lastName, req.body.phoneNumber, req.body.birthdate);
+            await this.authService.createAuth(email.toLowerCase(), req.body.password, req.body.firstName, req.body.lastName, req.body.phoneNumber, req.body.birthdate);
             res.status(HTTP_STATUS.CREATED).send();
         } catch (err) {
             next(err);
@@ -36,7 +45,7 @@ class AuthController {
     @HttpRequestInfo("/auth", "GET")
     public async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = await this.authService.login(req.userBasic.email, req.userBasic.password);
+            const user = await this.authService.login(req.userBasic.email.toLowerCase(), req.userBasic.password);
             res.header("c-api-key", user.accessToken);
             res.status(HTTP_STATUS.OK).send({user: user.userDetail});
         } catch (err) {
