@@ -8,6 +8,7 @@ import NotFoundException from "../exceptions/notFound.exception";
 import Bluebird from "bluebird";
 import UserPersistence from "../database/persistence/user.persistence";
 import { ValidationErrorItem } from "sequelize";
+import { HTTP_STATUS } from "../constants/http.constants";
 
 class AuthService {
     private static instance: AuthService;
@@ -44,9 +45,9 @@ class AuthService {
             if (err.errors && err.errors[0]) {
                 const error = err.errors[0] as ValidationErrorItem;
                 if (error.type == 'unique violation') {
-                    throw new GenericException({status: 409, message: `${error.path}`, internalStatus: "CONFLICT"});
+                    throw new GenericException({status: HTTP_STATUS.CONFLICT, message: `${error.path}`, internalStatus: "CONFLICT"});
                 }
-                throw new GenericException({status: 400, message: error.message, internalStatus: "VALIDATION_ERROR"});
+                throw new GenericException({status: HTTP_STATUS.BAD_REQUEST, message: error.message, internalStatus: "VALIDATION_ERROR"});
             }
             throw err;
         }
@@ -74,9 +75,9 @@ class AuthService {
         } catch(err){
             const error = err as any;
             if(error.name == 'TokenExpiredError') {
-                throw {status: 401, message: "Expired token."};
+                throw {status: HTTP_STATUS.UNAUTHORIZED, message: "Expired token."};
             } else {
-                throw {status: 400, message: "Invalid token."};
+                throw {status: HTTP_STATUS.BAD_REQUEST, message: "Invalid token."};
             }
         }
     }

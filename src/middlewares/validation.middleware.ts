@@ -3,7 +3,7 @@ import Joi from 'joi';
 import GenericException from '../exceptions/generic.exception';
 import { SwaggerBuilder } from '../utils/swaggerDocumentation/swaggerBuilder';
 import { translateJoiToSwagger } from '../utils/swaggerDocumentation/swaggerJoi.helper';
-import { HTTP_METHODS, HTTP_PARAMETERS } from '../constants/http.constants';
+import { HTTP_METHODS, HTTP_PARAMETERS, HTTP_STATUS } from '../constants/http.constants';
 
 // this function is weird because of the way the enum is defined in typescript
 export const JoiEnum = (enumObject: any) => {
@@ -42,7 +42,7 @@ const validationHelper = (schema: Joi.ObjectSchema, source: HTTP_PARAMETERS) => 
                         }
                         return e.message.replace(/"/g, '')
                     }).join(', '),
-                    status: 400,
+                    status: HTTP_STATUS.BAD_REQUEST,
                     internalStatus: "BAD_REQUEST"
                 }));
             } else {

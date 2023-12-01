@@ -1,7 +1,7 @@
 import { autobind } from "core-decorators";
 import AuthService from "../services/auth.service";
 import { Request, Response, NextFunction } from "express";
-import { HTTP_STATUS } from "../constants/http.constants";
+import { HTTP_METHODS, HTTP_STATUS } from "../constants/http.constants";
 import { HttpRequestInfo, validateBody } from "../middlewares/validation.middleware";
 import Joi from "joi";
 
@@ -34,7 +34,7 @@ class AuthController {
                 }
             }).required()
     }))
-    @HttpRequestInfo("/auth", "POST")
+    @HttpRequestInfo("/auth", HTTP_METHODS.POST)
     public async createAuth(req: Request, res: Response, next: NextFunction) {
         const email: string = req.body.email;
         
@@ -46,7 +46,7 @@ class AuthController {
         }
     }
 
-    @HttpRequestInfo("/auth", "GET")
+    @HttpRequestInfo("/auth", HTTP_METHODS.GET)
     public async login(req: Request, res: Response, next: NextFunction) {
         try {
             const user = await this.authService.login(req.userBasic.email.toLowerCase(), req.userBasic.password);

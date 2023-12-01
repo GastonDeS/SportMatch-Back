@@ -7,6 +7,7 @@ import EventPersistence from "../database/persistence/event.persistence";
 import Participant from "../database/models/Participant.model";
 import Event, { IEventDetail } from "../database/models/Event.model";
 import NotFoundException from "../exceptions/notFound.exception";
+import { HTTP_STATUS } from "../constants/http.constants";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -31,7 +32,7 @@ class EventsService {
         if (ownerId) {
             const event = await EventPersistence.getEventById(eventId);
             if (!event) throw new NotFoundException("Event");
-            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
+            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "NOT_OWNER" });
         }
         const removed = await ParticipantPersistence.removeParticipant(eventId.toString(), participantId);
         if (!removed) throw new NotFoundException("Participant");
@@ -41,7 +42,7 @@ class EventsService {
         if (ownerId) {
             const event = await EventPersistence.getEventById(eventId.toString());
             if (!event) throw new NotFoundException("Event");
-            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: 400, internalStatus: "NOT_OWNER" });
+            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "NOT_OWNER" });
         }
         await ParticipantPersistence.updateStatus(eventId.toString(), participantId, true);
     }

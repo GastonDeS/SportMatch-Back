@@ -7,6 +7,7 @@ import RatingPersistence from "../database/persistence/rating.persistence";
 import EventPersistence from "../database/persistence/event.persistence";
 import NotFoundException from "../exceptions/notFound.exception";
 import { Transaction } from "sequelize";
+import { HTTP_STATUS } from "../constants/http.constants";
 
 
 class UsersService {
@@ -33,16 +34,14 @@ class UsersService {
 
     public async rateUser(rated: string, rater: string, rating: number, eventId: string): Promise<void> {
         try {
-            if (rated === rater) throw new GenericException({ message: "User can't rate himself", status: 400, internalStatus: "BAD_REQUEST"});
-
             const event = await EventPersistence.getEventByIdWithParticipants(eventId);
             if (!event) throw new NotFoundException("Event");
-            if (event.schedule.getTime() + event.duration * 60000 > Date.now()) throw new GenericException({ message: "Event is not rateable", status: 400, internalStatus: "BAD_REQUEST"});
+            if (event.schedule.getTime() + event.duration * 60000 > Date.now()) throw new GenericException({ message: "Event is not rateable", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "BAD_REQUEST"});
 
             // check that user can rate
             if ((event.participants.filter((participant) => participant.userId === +rated ||
               participant.userId === +rater).length + ((event.ownerId === +rated || event.ownerId === +rater) ? 1 : 0)) !== 2)
-                throw new GenericException({ message: "User can't rate this event", status: 400, internalStatus: "BAD_REQUEST"});
+                throw new GenericException({ message: "User can't rate this event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "BAD_REQUEST"});
 
             await RatingPersistence.rate(rated, rater, rating, eventId);
         } catch (err) {

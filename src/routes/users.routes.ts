@@ -18,7 +18,7 @@ export default class UsersRoutes {
         this.router.use(cors());
 
         this.router.get('/', this.controller.getUsers);
-        this.router.post('/:userId/rate', userAuthMiddleware, this.controller.rateUser);
+        this.router.post('/:userId/rating', userAuthMiddleware, this.controller.rateUser);
         this.router.put('/:userId', userAuthMiddleware, this.controller.updateUser);
         this.router.get('/:userId/image', userAuthMiddleware, this.controller.getUserImage);
         this.router.put('/:userId/image', userAuthMiddleware, this.controller.updateUserImage);

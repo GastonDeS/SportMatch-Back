@@ -7,6 +7,7 @@ import Joi from "joi";
 import { document } from "../utils/swaggerDocumentation/annotations";
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
 import AWSService from "../services/aws.service";
+import GenericException from "../exceptions/generic.exception";
 
 
 @autobind
@@ -61,13 +62,15 @@ class UsersController {
     @validateParams(Joi.object({
         userId: Joi.number().min(1).required()
     }))
-    @HttpRequestInfo("/users/:userId/rate", HTTP_METHODS.POST)
+    @HttpRequestInfo("/users/:userId/rating", HTTP_METHODS.POST)
     public async rateUser(req: Request, res: Response, next: NextFunction) {
         const { rating, eventId } = req.body;
         const rater = req.user.id;
         const rated = req.params.userId;
 
         try {
+            if (rated === rater) throw new GenericException({ message: "User can't rate himself", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "BAD_REQUEST"});
+
             await this.usersService.rateUser(rated, rater, rating, eventId);
             res.status(HTTP_STATUS.CREATED).send();
         } catch (err) {

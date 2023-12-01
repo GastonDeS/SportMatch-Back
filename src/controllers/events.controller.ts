@@ -163,7 +163,7 @@ class EventsController {
     @validateParams(Joi.object({
         eventId: Joi.number().min(1).required()
     }))
-    @HttpRequestInfo("/events/:eventId/participants", "delete")
+    @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.DELETE)
     public async removeParticipant(req: Request, res: Response, next: NextFunction) {
         const participantId = req.user.id;
         const eventId = req.params.eventId;
@@ -191,7 +191,7 @@ class EventsController {
     @validateBody(Joi.object({
         participantId: Joi.number().required(),
     }))
-    @HttpRequestInfo("/events/:eventId/owner/participants", "delete")
+    @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.DELETE)
     public async ownerRemoveParticipant(req: Request, res: Response, next: NextFunction) {
         const participantId = req.body.participantId;
         const ownerId = req.user.id;
