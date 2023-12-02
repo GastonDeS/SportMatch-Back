@@ -12,4 +12,5 @@ export default interface IEventDetailDto {
         firstName: string,
         id: number 
     }
+    status: number;
 }

@@ -15,6 +15,7 @@ export interface IEventDetail {
         firstname: string,
         id: number 
     }
+    status: number
 }
 
 @Table({

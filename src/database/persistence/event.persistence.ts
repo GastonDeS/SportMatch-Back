@@ -155,6 +155,16 @@ class EventPersistence {
                 sequelize.literal('remaining - COUNT(participants.id)'),
                 'remaining'
               ],
+              [
+                sequelize.literal(`
+                  CASE
+                    WHEN schedule > CURRENT_TIMESTAMP THEN 0
+                    WHEN schedule <= CURRENT_TIMESTAMP AND schedule + (duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
+                    ELSE 2
+                  END
+                `),
+                'status'
+              ]
             ],
             include: [
               {
