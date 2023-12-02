@@ -6,7 +6,7 @@ import UserSportPersistence from "../database/persistence/userSport.persistense"
 import RatingPersistence from "../database/persistence/rating.persistence";
 import EventPersistence from "../database/persistence/event.persistence";
 import NotFoundException from "../exceptions/notFound.exception";
-import { Transaction } from "sequelize";
+import { Transaction, ValidationErrorItem } from "sequelize";
 import { HTTP_STATUS } from "../constants/http.constants";
 import IUserDetailDto from "../dto/userDetail.dto";
 import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
@@ -64,20 +64,31 @@ class UsersService {
         await UserPersistence.createUser({ email, firstname, lastname, phone_number, birthdate}, transaction);
     }
 
-    public async updateUser(userId: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<void> {
-        if (phone_number) await this.updatePhoneNumber(userId, phone_number);
+    public async updateUser(userId: string, phoneNumber?: string, locations?: string[], sports?: string[]): Promise<void> {
+        if (phoneNumber) await this.updatePhoneNumber(userId, phoneNumber);
         if (locations) await this.updateLocations(userId, locations);
         if (sports) await this.updateSports(userId, sports);
     }
 
     private async updatePhoneNumber(userId: string, phone_number: string): Promise<User> {
-        const updatedUser = await UserPersistence.updatePhoneNumber(+userId, phone_number);        
+        try {
+            const updatedUser = await UserPersistence.updatePhoneNumber(+userId, phone_number);        
 
-        return updatedUser;
+            return updatedUser;
+        } catch (err) {
+            if (err.errors && err.errors[0]) {
+                const error = err.errors[0] as ValidationErrorItem;
+                if (error.type == 'unique violation') {
+                    throw new GenericException({status: HTTP_STATUS.CONFLICT, message: `phoneNumber`, internalStatus: "CONFLICT"});
+                }
+                throw new GenericException({status: HTTP_STATUS.BAD_REQUEST, message: error.message, internalStatus: "VALIDATION_ERROR"});
+            }
+            throw err;
+        }
     }
 
     private async updateLocations(userId: string, locations: string[]): Promise<void> {
-        const newLocations = UserLocationPersistence.updateUserLocations(userId, locations); // TODO: send email? or update token to have email
+        const newLocations = UserLocationPersistence.updateUserLocations(userId, locations);
     }
 
     private async updateSports(userId: string, sports: string[]): Promise<void> {
