@@ -5,7 +5,7 @@ export default interface IEventQueryDto {
     description: string;
     schedule: string;
     location: string;
-    expertise: string;
+    expertise: number;
     sportId: number;
     remaining: string;
     owner: { 

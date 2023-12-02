@@ -10,7 +10,7 @@ export default class EventSearchDtoMapper {
             description: eventSearch.description,
             schedule: eventSearch.schedule,
             location: eventSearch.location,
-            expertise: eventSearch.expertise,
+            expertise: +eventSearch.expertise,
             sportId: eventSearch.sport_id,
             remaining: eventSearch.remaining.toString(),
             owner: {
