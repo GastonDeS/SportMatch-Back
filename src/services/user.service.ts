@@ -1,6 +1,6 @@
 import GenericException from "../exceptions/generic.exception";
 import UserPersistence from "../database/persistence/user.persistence";
-import User, { IUserDetail } from "../database/models/User.model";
+import User from "../database/models/User.model";
 import UserLocationPersistence from "../database/persistence/userLocation.persistence";
 import UserSportPersistence from "../database/persistence/userSport.persistense";
 import RatingPersistence from "../database/persistence/rating.persistence";
@@ -8,6 +8,8 @@ import EventPersistence from "../database/persistence/event.persistence";
 import NotFoundException from "../exceptions/notFound.exception";
 import { Transaction } from "sequelize";
 import { HTTP_STATUS } from "../constants/http.constants";
+import IUserDetailDto from "../dto/userDetail.dto";
+import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
 
 
 class UsersService {
@@ -25,11 +27,11 @@ class UsersService {
         return await UserPersistence.getAllUsers();
     }
 
-    public async getUserDetailById(id: string): Promise<IUserDetail> {
+    public async getUserDetailById(id: string): Promise<IUserDetailDto> {
         const user = await UserPersistence.getUserDetailById(id);
         if (!user) throw new NotFoundException("User");
 
-        return user;
+        return UserDetailDtoMapper.toUserDetailDto(user);
     }
 
     public async rateUser(rated: string, rater: string, rating: number, eventId: string): Promise<void> {
@@ -46,14 +48,20 @@ class UsersService {
             await RatingPersistence.rate(rated, rater, rating, eventId);
         } catch (err) {
             if (err instanceof GenericException) throw err;
-            console.log(err);
             throw new GenericException({ message: "Internal server error", status: 500, internalStatus: "INTERNAL_SERVER_ERROR"});
         }
       }
       
 
-    public async createUser(email: string, firstname: string, lastname: string, phone_number: string, birthdate: string, transaction: Transaction): Promise<User> {
-        return await UserPersistence.createUser({ email, firstname, lastname, phone_number, birthdate}, transaction);
+    public async createUser(
+        email: string,
+        firstname: string,
+        lastname: string,
+        phone_number: string,
+        birthdate: string,
+        transaction: Transaction
+    ): Promise<void> {
+        await UserPersistence.createUser({ email, firstname, lastname, phone_number, birthdate}, transaction);
     }
 
     public async updateUser(userId: string, phone_number?: string, locations?: string[], sports?: string[]): Promise<void> {

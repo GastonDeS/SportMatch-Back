@@ -9,6 +9,7 @@ export interface IUserDetail {
     firstname: string;
     lastname: string;
     phone_number: string;
+    birth_date: string;
     email: string;
     rating: number;
     count: number;

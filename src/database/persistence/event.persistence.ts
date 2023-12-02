@@ -1,5 +1,5 @@
 import QueryTypes from "sequelize/types/query-types";
-import { IEvent } from "../../interfaces/event.interface";
+import { EventQuery, IEvent } from "../../interfaces/event.interface";
 import sequelize from "../connection";
 import Event, { IEventDetail } from "../models/Event.model"
 import Participant from "../models/Participant.model";
@@ -23,9 +23,11 @@ class EventPersistence {
     }
 
     // TODO: this is legacy too hard to improve
-    static async getEvents(queryFilters: Record<string, string>, page: number, limit: number): Promise<any[]> {// return event detail
+    static async getEvents(queryFilters: Record<string, string>, page: number, limit: number): Promise<EventQuery[]> {// return event detail
         const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
         const filterOut = !!queryFilters.filterOut;
+
+        await sequelize.query(`SET TIME ZONE 'America/Argentina/Buenos_Aires'`); // TODO this is a test remove
 
         const queryBuilder = new QueryBuilder(`SELECT
         events.id AS event_id,
@@ -38,7 +40,7 @@ class EventPersistence {
         users.firstname AS owner_firstname,
         users.id AS owner_id,
         ${participantIdFilter ? "participants.status as participant_status," : ""}
-        ${participantIdFilter ? "COALESCE(rated_aux.isRated, 0) as is_rated," : ""}
+        ${participantIdFilter ? "COALESCE(rated_aux.isRated, FALSE) as is_rated," : ""}
         COALESCE(rate.rating::float, 0) as rating,
         COALESCE(rate.count::integer, 0) as rate_count,
         CASE
@@ -56,7 +58,7 @@ class EventPersistence {
             SELECT rated, avg(rating) as rating, count(rating) as count FROM ratings GROUP BY rated
         ) as rate ON events.owner_id = rate.rated
         ${participantIdFilter ? `LEFT JOIN (
-            SELECT max(1) as isRated, event_id from ratings where rater = ${queryFilters.participantId} group by event_id
+            SELECT CASE WHEN MAX(1) > 0 THEN TRUE ELSE FALSE END AS isRated, event_id from ratings where rater = ${queryFilters.participantId} group by event_id
         ) as rated_aux ON rated_aux.event_id = events.id` :
             ""}\n`);
 

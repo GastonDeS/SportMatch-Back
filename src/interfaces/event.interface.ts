@@ -21,8 +21,8 @@ export interface EventQuery {
     owner_firstname: string;
     owner_id: number;
     participant_status?: boolean; // these two are for participants id filter
-    is_rated?: number;
-    rating?: number; // From here to the end are for getEvents
-    rate_count?: number;
+    is_rated?: boolean;
+    rating: number; // From here to the end are for getEvents
+    rate_count: number;
     event_status?: number;
 }

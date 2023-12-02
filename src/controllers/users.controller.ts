@@ -30,19 +30,34 @@ class UsersController {
             }
         })
     .build())
-    @validateQuery(Joi.object({
-        id: Joi.number().optional(),
-    }))
     @HttpRequestInfo("/users", HTTP_METHODS.GET)
     public async getUsers(req: Request, res: Response, next: NextFunction) {
         try {
-            if (req.query.id) {
-                const user = await this.usersService.getUserDetailById(req.query.id as string);
-                res.status(HTTP_STATUS.OK).send(user);
-            } else {
-                const users = await this.usersService.getUsers();
-                res.status(HTTP_STATUS.OK).send(users);
+            const users = await this.usersService.getUsers();
+            res.status(HTTP_STATUS.OK).send(users);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                }
             }
+        })
+    .build())
+    @validateParams(Joi.object({
+        userId: Joi.number().optional(),
+    }))
+    @HttpRequestInfo("/users/:userId", HTTP_METHODS.GET)
+    public async getUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = await this.usersService.getUserDetailById(req.params.userId as string);
+            res.status(HTTP_STATUS.OK).send(user);
         } catch (err) {
             next(err);
         }

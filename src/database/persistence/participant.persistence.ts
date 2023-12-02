@@ -12,7 +12,6 @@ class ParticipantPersistence {
                 userId: userId,
                 status: false
             });
-            console.log(participant);
             return participant;
         } catch (err) {
             if (err instanceof UniqueConstraintError) {
@@ -32,12 +31,12 @@ class ParticipantPersistence {
                     users.phone_number                  as phone_number,
                     COALESCE(avg(rating)::float, 0)     as rating,
                     COALESCE(count(rating)::integer, 0) as count,
-                    COALESCE(rated_aux.isRated, 0)      as is_rated
+                    COALESCE(rated_aux.isRated, FALSE)      as is_rated
                 FROM participants
                         left outer join users on participants.user_id = users.id
                         left outer join ratings on participants.user_id = ratings.rated
                         left outer join (
-                    select max(1) as isRated, rated from ratings where event_id = :eventId group by rated
+                    select CASE WHEN MAX(1) > 0 THEN TRUE ELSE FALSE END AS isRated, rated from ratings where event_id = :eventId group by rated
                 ) as rated_aux on rated_aux.rated = participants.user_id
                 WHERE participants.event_id = :eventId
                 GROUP BY participants.user_id, users.firstname, users.lastname, users.email, participants.status, users.phone_number,

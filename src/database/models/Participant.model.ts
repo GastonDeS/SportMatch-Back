@@ -11,7 +11,7 @@ export interface IParticipantDetail {
     phone_number: string,
     rating: number,
     count: number,
-    is_rated: number // TODO: wtf make this boolean talk to @naso
+    is_rated: boolean
 }
 
 export enum ParticipantStatus {

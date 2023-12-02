@@ -9,6 +9,7 @@ import Bluebird from "bluebird";
 import UserPersistence from "../database/persistence/user.persistence";
 import { ValidationErrorItem } from "sequelize";
 import { HTTP_STATUS } from "../constants/http.constants";
+import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
 
 class AuthService {
     private static instance: AuthService;
@@ -34,13 +35,12 @@ class AuthService {
 
             const passwordHash = await hashPassword(password);
 
-            const auth = await AuthPersistence.createAuth(email, passwordHash.toString(), transaction);
+            await AuthPersistence.createAuth(email, passwordHash.toString(), transaction);
 
-            const user = await this.userService.createUser(email, firstName, lastName, phoneNumber, birthdate, transaction);
+            await this.userService.createUser(email, firstName, lastName, phoneNumber, birthdate, transaction);
 
             await transaction.commit();
         } catch (err) {
-            console.log(err);
             if (transaction) await transaction.rollback();
             if (err.errors && err.errors[0]) {
                 const error = err.errors[0] as ValidationErrorItem;
@@ -62,9 +62,11 @@ class AuthService {
         const user = await UserPersistence.getUserByEmail(email);
         if (!user) throw new NotFoundException('User');
         const userDetail = await UserPersistence.getUserDetailById(user.id.toString());
+        if (!userDetail) throw new NotFoundException('User');
 
         const accessToken = this.signAccessToken(user.id.toString(), userAuth.email);
-        return {userDetail, accessToken};
+        
+        return {userDetail: UserDetailDtoMapper.toUserDetailDto(userDetail), accessToken};
     }
 
     verifyToken = (token: string) : string | jwt.JwtPayload=> {
@@ -98,8 +100,6 @@ export const PBKDF2_HASH = process.env.PBKDF2_HASH ?? '';
 
 export const validatePassword = async (maybePassword: string, passwordHash: string) => {
     const derKey: Buffer = await pbkdf2(maybePassword, PBKDF2_HASH, 1000, 32, 'sha512');
-    console.log(derKey.toString());
-    console.log(passwordHash);
     return derKey.toString() === passwordHash;
 }
 

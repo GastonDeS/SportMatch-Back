@@ -30,11 +30,11 @@ class UserPersistence {
 
     static async getUserDetailById(id: string): Promise<IUserDetail | null> {
         const userDetail = await sequelize.query(`SELECT
-                u.id AS userId,
+                u.id AS user_id,
                 u.firstname,
                 u.lastname,
-                u.phone_number as phoneNumber,
-                u.birthdate as birthdate,
+                u.phone_number as phone_number,
+                u.birthdate as birth_date,
                 u.email,
                 ARRAY_AGG(DISTINCT (us.sport_id)) AS sports,
                 ARRAY_AGG(DISTINCT ul.location) AS locations,
