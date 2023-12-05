@@ -115,10 +115,6 @@ class UsersController {
         const { phoneNumber, locations, sports } = req.body;
         const userId = req.user.id;
 
-        console.log("HELLO THERE");
-        console.log("REQ UPDATE: ", req);
-        console.log("REQ.BODY UPDATE: ", req.body);
-
         try {
             if (userIdPath !== userId) throw new Error("User can't update another user");
 
