@@ -36,11 +36,9 @@ class ParticipantService {
     }
 
     public async acceptParticipant(eventId: number, participantId: string, ownerId: string): Promise<void> {
-        if (ownerId) {
-            const event = await EventPersistence.getEventById(eventId.toString());
-            if (!event) throw new NotFoundException("Event");
-            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "NOT_OWNER" });
-        }
+        const event = await EventPersistence.getEventById(eventId.toString());
+        if (!event) throw new NotFoundException("Event");
+        if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "NOT_OWNER" });
         await ParticipantPersistence.updateStatus(eventId.toString(), participantId, true);
     }
 

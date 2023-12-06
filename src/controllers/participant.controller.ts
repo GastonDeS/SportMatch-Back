@@ -7,6 +7,7 @@ import { ParticipantStatus } from "../database/models/Participant.model";
 import { validateParams, HttpRequestInfo, validateBody, validateQuery, JoiEnum } from "../middlewares/validation.middleware";
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
 import { document } from "../utils/swaggerDocumentation/annotations";
+import GenericException from "../exceptions/generic.exception";
 
 
 @autobind
@@ -30,7 +31,7 @@ export default class ParticipantController {
     @validateParams(Joi.object({
         eventId: Joi.number().min(1).required()
     }))
-    @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.PUT)
+    @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.POST)
     public async addParticipant(req: Request, res: Response, next: NextFunction) {
         const participantId = req.user.id;
         const eventId = req.params.eventId;
@@ -54,14 +55,21 @@ export default class ParticipantController {
         })
     .build())
     @validateParams(Joi.object({
-        eventId: Joi.number().min(1).required()
+        eventId: Joi.number().min(1).required(),
+        participantId: Joi.number().min(1).required(),
     }))
-    @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.DELETE)
+    @HttpRequestInfo("/events/:eventId/participants/:participantId", HTTP_METHODS.DELETE)
     public async removeParticipant(req: Request, res: Response, next: NextFunction) {
-        const participantId = req.user.id;
+        const participantId = req.params.participantId;
         const eventId = req.params.eventId;
+        const userId = req.user.id;
+
         try {
-            await this.participantService.removeParticipant(eventId, participantId);
+            if (participantId !== userId) { // deny by owner
+                await this.participantService.removeParticipant(eventId, participantId, userId);
+            } else { // cancel by participant
+                await this.participantService.removeParticipant(eventId, participantId);
+            }
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -79,47 +87,21 @@ export default class ParticipantController {
         })
     .build())
     @validateParams(Joi.object({
-        eventId: Joi.number().min(1).required()
+        eventId: Joi.number().min(1).required(),
+        participantId: Joi.number().min(1).required(),
     }))
     @validateBody(Joi.object({
-        participantId: Joi.number().required(),
+        status: Joi.boolean().required()
     }))
-    @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.DELETE)
-    public async ownerRemoveParticipant(req: Request, res: Response, next: NextFunction) {
-        const participantId = req.body.participantId;
-        const ownerId = req.user.id;
-        const eventId = req.params.eventId;
-        try {
-            await this.participantService.removeParticipant(eventId, participantId, ownerId);
-            res.status(HTTP_STATUS.OK).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    @document(SwaggerEndpointBuilder.create()
-        .responses({
-            "200": {
-                description: "OK",
-                schema: {
-                    type: "object",
-                }
-            }
-        })
-    .build())
-    @validateParams(Joi.object({
-        eventId: Joi.number().min(1).required()
-    }))
-    @validateBody(Joi.object({
-        participantId: Joi.number().required(),
-    }))
-    @HttpRequestInfo("/events/:eventId/owner/participants", HTTP_METHODS.PUT)
-    public async acceptParticipant(req: Request, res: Response, next: NextFunction) {
-        const participantId = req.body.participantId;
+    @HttpRequestInfo("/events/:eventId/participants/:participantId", HTTP_METHODS.PUT)
+    public async updateParticipant(req: Request, res: Response, next: NextFunction) {
+        const participantId = req.params.participantId;
         const ownerId = req.user.id;
         const eventId = parseInt(req.params.eventId);
+        const status = req.body.status;
 
         try {
+            if (!status) throw new GenericException({ message: "Status is invalid for this event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "INVALID_STATUS" })
             await this.participantService.acceptParticipant(eventId, participantId, ownerId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
@@ -143,7 +125,7 @@ export default class ParticipantController {
     @validateQuery(Joi.object({
         status: JoiEnum(ParticipantStatus).optional()
     }))
-    @HttpRequestInfo("/events/:eventId/participants/owner", HTTP_METHODS.GET)
+    @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.GET)
     public async getParticipants(req: Request, res: Response, next: NextFunction) {
         const eventId = parseInt(req.params.eventId);
         const status = req.query.status ? req.query.status === ParticipantStatus.ACCEPTED : undefined;

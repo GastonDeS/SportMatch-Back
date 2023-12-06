@@ -16,12 +16,10 @@ export default class ParticipantsRoutes {
         this.router.use(urlencoded({ extended: true }));
         this.router.use(cors());
 
-        this.router.put('/', userAuthMiddleware, this.controller.addParticipant);
+        this.router.post('/', userAuthMiddleware, this.controller.addParticipant);
+        this.router.get('/', this.controller.getParticipants);
 
-        this.router.delete('/', userAuthMiddleware, this.controller.removeParticipant);
-        this.router.put('/owner', userAuthMiddleware, this.controller.acceptParticipant);
-
-        this.router.get('/owner', this.controller.getParticipants);
-        this.router.delete('/owner', userAuthMiddleware, this.controller.ownerRemoveParticipant);
+        this.router.delete('/:participantId', userAuthMiddleware, this.controller.removeParticipant);
+        this.router.put('/:participantId', userAuthMiddleware, this.controller.updateParticipant);
     }
 }
