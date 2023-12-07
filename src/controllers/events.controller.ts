@@ -107,7 +107,7 @@ class EventsController {
         location: Joi.string().required(),
         remaining: Joi.number().required(),
         duration: Joi.number().required(), // minutes
-        description: Joi.string().optional()
+        description: Joi.string().max(50).required()
     }))
     @HttpRequestInfo("/events", HTTP_METHODS.POST)
     public async createEvent(req: Request, res: Response, next: NextFunction) {

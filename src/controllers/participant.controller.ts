@@ -31,11 +31,16 @@ export default class ParticipantController {
     @validateParams(Joi.object({
         eventId: Joi.number().min(1).required()
     }))
+    @validateBody(Joi.object({
+        userId: Joi.number().min(1).required()
+    }))
     @HttpRequestInfo("/events/:eventId/participants", HTTP_METHODS.POST)
     public async addParticipant(req: Request, res: Response, next: NextFunction) {
         const participantId = req.user.id;
         const eventId = req.params.eventId;
         try {
+            if (participantId !== req.body.userId) 
+                throw new GenericException({ message: "User id is invalid", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "INVALID_USER_ID" })
             await this.participantService.addParticipant(eventId, participantId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
