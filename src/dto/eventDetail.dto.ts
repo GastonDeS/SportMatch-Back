@@ -3,7 +3,7 @@
 export default interface IEventDetailDto {
     id: string;
     description: string;
-    schedule: Date;
+    schedule: string;
     location: string;
     expertise: number;
     sportId: number;

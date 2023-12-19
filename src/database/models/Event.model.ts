@@ -6,7 +6,7 @@ import Participant from "./Participant.model";
 export interface IEventDetail {
     event_id: number,
     description: string,
-    schedule: Date,
+    schedule: string,
     location: string,
     expertise: number,
     sportId: number,

@@ -147,7 +147,7 @@ class EventPersistence {
             attributes: [
               ['id', 'event_id'],
               'description',
-              'schedule',
+              [sequelize.literal('schedule::text'), 'schedule'],
               'location',
               'expertise',
               'sportId',
